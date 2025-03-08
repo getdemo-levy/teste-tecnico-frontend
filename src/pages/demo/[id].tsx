@@ -128,15 +128,15 @@ const DemoPage: React.FC = () => {
         )}
 
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <FrameSelector 
-            frames={frames} 
-            selectedFrame={selectedFrame} 
-            onSelect={(frame) => dispatch(setSelectedFrame(frame))}
-          />
           <FrameEditor 
             selectedFrame={selectedFrame} 
             onSave={handleSaveHtml}
             onCancel={handleCancelEdit}
+          />
+          <FrameSelector 
+            frames={frames} 
+            selectedFrame={selectedFrame} 
+            onSelect={(frame) => dispatch(setSelectedFrame(frame))}
           />
         </div>
       </div>
