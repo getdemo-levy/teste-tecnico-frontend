@@ -6,7 +6,7 @@ import {
   setEditing,
   saveEditing,
   cancelEditing,
-} from '@/store/iframe-editing-slice';
+} from '@/store/iframe-editing.slice';
 import EditorToolbar from '../editor-toolbar';
 import { FrameRendererProps } from '@/interfaces/frame-renderer-props';
 
