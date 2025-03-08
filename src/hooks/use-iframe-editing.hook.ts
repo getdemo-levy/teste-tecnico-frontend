@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { setInitialHtml, setEditing, updateHtml, saveEditing, cancelEditing } from '@/store/iframe-editing-slice';
+import { RootState } from '@/store';
+import { useEffect, useRef, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 export const useIframeEditing = (initialHtml: string) => {
-  const [editedHtml, setEditedHtml] = useState<string>(initialHtml);
-  const [originalHtml, setOriginalHtml] = useState<string>(initialHtml);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [currentEditElement, setCurrentEditElement] = useState<HTMLElement | null>(null);
+  const dispatch = useDispatch();
+  const { editedHtml, isEditing } = useSelector((state: RootState) => state.iframeEditing);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    setOriginalHtml(initialHtml);
-    setEditedHtml(initialHtml);
-  }, [initialHtml]);
+    dispatch(setInitialHtml(initialHtml));
+  }, [initialHtml, dispatch]);
 
   const handleDoubleClick = useCallback((event: MouseEvent) => {
     const iframeDoc = iframeRef.current?.contentDocument;
@@ -20,26 +20,20 @@ export const useIframeEditing = (initialHtml: string) => {
     const editableElements = ['P', 'DIV', 'SPAN', 'H1', 'H2', 'H3', 'LI'];
 
     if (editableElements.includes(target.tagName)) {
-      if (currentEditElement && currentEditElement !== target) {
-        currentEditElement.contentEditable = 'false';
-        currentEditElement.style.outline = '';
-      }
-
       target.contentEditable = 'true';
       target.focus();
       target.style.outline = '2px solid #3B82F6';
       target.style.minHeight = '1em';
-      setIsEditing(true);
-      setCurrentEditElement(target);
+      dispatch(setEditing(true));
 
       const blurHandler = () => {
-        setEditedHtml(iframeDoc.documentElement.outerHTML);
+        dispatch(updateHtml(iframeDoc.documentElement.outerHTML));
       };
 
       target.removeEventListener('blur', blurHandler);
       target.addEventListener('blur', blurHandler);
     }
-  }, [currentEditElement]);
+  }, [dispatch]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -70,23 +64,12 @@ export const useIframeEditing = (initialHtml: string) => {
   }, [editedHtml]);
 
   const handleSave = () => {
-    if (currentEditElement) {
-      currentEditElement.contentEditable = 'false';
-      currentEditElement.style.outline = '';
-      setCurrentEditElement(null);
-    }
-    setIsEditing(false);
+    dispatch(saveEditing());
     return editedHtml;
   };
 
   const handleCancel = () => {
-    if (currentEditElement) {
-      currentEditElement.contentEditable = 'false';
-      currentEditElement.style.outline = '';
-      setCurrentEditElement(null);
-    }
-    setEditedHtml(originalHtml);
-    setIsEditing(false);
+    dispatch(cancelEditing());
   };
 
   return { iframeRef, editedHtml, isEditing, handleSave, handleCancel };

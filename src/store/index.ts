@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import demoReducer from '../features/demo/demo-slice';
+import iframeEditingReducer from './iframe-editing-slice';
 
 export const store = configureStore({
   reducer: {
-    demo: demoReducer,
+    iframeEditing: iframeEditingReducer,
+    // outros slices aqui...
   },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
+
 export type AppDispatch = typeof store.dispatch;
