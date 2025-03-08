@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import {
@@ -14,6 +14,7 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
   const dispatch = useDispatch();
   const { editedHtml, isEditing } = useSelector((state: RootState) => state.iframeEditing);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [showNotification, setShowNotification] = useState(false);
 
   const editableElements = useMemo(() => ['P', 'DIV', 'SPAN', 'H1', 'H2', 'H3', 'LI'], []);
 
@@ -82,6 +83,16 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
     }
   }, [editedHtml]);
 
+  useEffect(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showNotification]);
+
   const removeOutline = () => {
     const iframeDoc = iframeRef.current?.contentDocument;
     if (iframeDoc) {
@@ -97,37 +108,58 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
     onSave(editedHtml);
     dispatch(setEditing(false));
     removeOutline();
+    setShowNotification(true);
   };
 
   const handleCancelClick = () => {
-  dispatch(cancelEditing());
-  removeOutline();
-  
-  if (iframeRef.current) {
-    iframeRef.current.srcdoc = html;
-  }
-  
-  if (typeof onCancel === 'function') {
-    onCancel({ preserveCurrentFrame: true });
-  }
-};
+    dispatch(cancelEditing());
+    removeOutline();
+    
+    if (iframeRef.current) {
+      iframeRef.current.srcdoc = html;
+    }
+    
+    if (typeof onCancel === 'function') {
+      onCancel({ preserveCurrentFrame: true });
+    }
+  };
 
   return (
     <div className="relative">
+      
+      
       <iframe
         ref={iframeRef}
         srcDoc={editedHtml}
-        className={`w-full h-96 border-0 ${isEditing ? 'cursor-text' : ''}`}
+        className={`w-full h-[50vh] border-0 ${isEditing ? 'cursor-text' : ''}`}
         title="Frame Renderer"
         sandbox="allow-same-origin allow-scripts allow-forms"
         loading="lazy"
       />
+      
       {isEditing && (
         <EditorToolbar 
           onSave={handleSaveClick} 
           onCancel={handleCancelClick} 
         />
       )}
+      
+      {showNotification && (
+        <div className="fixed bottom-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md z-50 max-w-md">
+          <div className="flex items-center">
+            <div className="py-1">
+              <svg className="h-6 w-6 text-green-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium">Frame salvo com sucesso!</p>
+              <p>Lembre-se de clicar em &rdquo;Salvar todas alterações&rdquo; no topo da página quando terminar de editar todos os frames.</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 };

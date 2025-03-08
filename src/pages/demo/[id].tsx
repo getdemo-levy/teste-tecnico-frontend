@@ -95,7 +95,7 @@ const DemoPage: React.FC = () => {
 
   return (
     <Layout title={demoName}>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center text-sm text-gray-500">
             <button 
