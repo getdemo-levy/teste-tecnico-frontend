@@ -1,9 +1,5 @@
+import { EditorToolbarProps } from '@/interfaces/editor-toolbar-props.interface';
 import React from 'react';
-
-interface EditorToolbarProps {
-  onSave: () => void;
-  onCancel: () => void;
-}
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onCancel }) => {
   return (

@@ -1,39 +1,47 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-
-interface LayoutProps {
-  children: ReactNode;
-  title?: string;
-}
+import { LayoutProps } from '@/interfaces/layout-props.interface';
+import GithubIcon from './icons/git-hub-icon';
 
 const Layout: React.FC<LayoutProps> = ({ children, title = "Get Demo Levy" }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex">
       <Head>
         <title>{title}</title>
         <meta name="description" content="Get Demo - Visualize demos interativamente" />
       </Head>
-      
-      <header className="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2 transition-transform hover:scale-105">
-            <span className="text-2xl font-bold">Get Demo</span>
+
+      <aside className="w-24 bg-gradient-to-b from-blue-600 to-blue-500 shadow-lg flex flex-col justify-between fixed h-full">
+        <div className="p-4 flex justify-center items-center h-24">
+          <Link href="/" className="text-white text-0.5 font-bold hover:opacity-80 transition-opacity text-center">
+            GetDemo
           </Link>
         </div>
-      </header>
-      
-      <main className="flex-grow container mx-auto px-4 py-6">
-        {children}
-      </main>
-      
-      <footer className="bg-white border-t border-gray-200 text-gray-600 py-6">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-center md:text-left mb-4 md:mb-0">
+
+        <div className="p-4 border-t border-blue-400 flex justify-center">
+          <a
+            href="https://github.com/levymc"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-blue-200 transition-colors"
+          >
+            <GithubIcon />
+          </a>
+        </div>
+      </aside>
+
+      <div className="flex-1 flex flex-col ml-24">
+        <main className="flex-grow bg-gray-50 p-8">
+          {children}
+        </main>
+
+        <footer className="bg-white border-t border-gray-200 text-gray-600 py-5 px-8">
+          <div className="container mx-auto text-center md:text-left">
             &copy; {new Date().getFullYear()} Get Demo - Levy
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 };

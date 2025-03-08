@@ -8,15 +8,22 @@ import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
 import { AppDispatch, RootState } from '@/store';
 import { fetchDemoData, setSelectedFrame, saveHtmlAction } from '@/store/demo.slice';
+import { updateFrame } from '@/store/demo.slice';
 
 const DemoPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
   const dispatch = useDispatch<AppDispatch>();
 
-  const { demoDetails, frames, selectedFrame, hasUnsavedChanges, loading, error } = useSelector(
-    (state: RootState) => state.demo
-  );
+  const { 
+    demoDetails, 
+    frames, 
+    selectedFrame, 
+    hasUnsavedChanges, 
+    loading, 
+    error, 
+    saving 
+  } = useSelector((state: RootState) => state.demo);
 
   useEffect(() => {
     if (typeof id === 'string') {
@@ -28,10 +35,18 @@ const DemoPage: React.FC = () => {
     dispatch(saveHtmlAction(newHtml));
   };
 
-
   const saveAllChanges = () => {
-    // Aqui você pode despachar outro thunk para salvar no servidor,
-    // ou chamar uma função que utilize o estado do Redux.
+    if (!demoDetails) return;
+    
+    const modifiedFrames = frames.filter(frame => frame.isModified);
+    
+    modifiedFrames.forEach(frame => {
+      dispatch(updateFrame({
+        id_demo: demoDetails.id,
+        id_frame: frame.id,
+        html: frame.html
+      }));
+    });
   };
 
   if (loading) {
@@ -88,12 +103,23 @@ const DemoPage: React.FC = () => {
           {hasUnsavedChanges && (
             <button
               onClick={saveAllChanges}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+              disabled={saving > 0}
+              className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors
+                ${saving > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              Salvar todas alterações
+              {saving > 0 ? 'Salvando...' : 'Salvar todas alterações'}
             </button>
           )}
         </div>
+        
+        {saving > 0 && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <LoadingSpinner message="Salvando alterações..." />
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <FrameSelector 
             frames={frames} 

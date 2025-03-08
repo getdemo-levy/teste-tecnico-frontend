@@ -7,5 +7,6 @@ export interface DemoState {
   selectedFrame: Frame | null;
   hasUnsavedChanges: boolean;
   loading: boolean;
+  saving: number;
   error: string | null;
 }

@@ -1,8 +1,5 @@
+import { LoadingSpinnerProps } from '@/interfaces/loading-spinner-props.interface';
 import React from 'react';
-
-interface LoadingSpinnerProps {
-  message?: string;
-}
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ message }) => {
   return (
