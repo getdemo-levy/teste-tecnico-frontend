@@ -16,15 +16,17 @@ const HomePage: React.FC = () => {
   if (loading) return <p>Carregando...</p>;
   if (error) return <p>{error}</p>;
 
-  return (
+  return  (
     <Layout title="GetDemo - Levy Teste">
       {demos.length ? (
-        <div className="container mx-auto p-4">
-          <h1 className="text-3xl font-bold mb-4">Lista de Demos</h1>
+        <div className="container mx-auto px-4 ">
+          <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center md:text-left">
+            Lista de Demos
+          </h1>
           <DemoList demos={demos} />
         </div>
       ) : (
-        <p>Nenhum demo encontrado.</p>
+        <p className="text-center text-gray-500 mt-8">Nenhum demo encontrado.</p>
       )}
     </Layout>
   );

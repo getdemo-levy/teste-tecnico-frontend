@@ -1,11 +1,5 @@
+import { FrameSelectorProps } from '@/interfaces/frame-selector-props.interface';
 import React from 'react';
-import { Frame } from '@/interfaces/frame.interface';
-
-interface FrameSelectorProps {
-  frames: Frame[];
-  selectedFrame: Frame | null;
-  onSelect: (frame: Frame) => void;
-}
 
 const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, onSelect }) => {
   return (

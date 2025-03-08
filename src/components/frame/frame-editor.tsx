@@ -1,11 +1,6 @@
 import React from 'react';
 import FrameRenderer from '@/components/frame/frame-renderer';
-import { Frame } from '@/interfaces/frame.interface';
-
-interface FrameEditorProps {
-  selectedFrame: Frame | null;
-  onSave: (newHtml: string) => void;
-}
+import { FrameEditorProps } from '@/interfaces/frame-editor-props.interface';
 
 const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave }) => {
   if (!selectedFrame) return null;

@@ -31,12 +31,12 @@ const Layout: React.FC<LayoutProps> = ({ children, title = "Get Demo Levy" }) =>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col ml-48">
+      <div className="flex-1 flex flex-col ml-24">
         <main className="flex-grow bg-gray-50 p-8">
           {children}
         </main>
 
-        <footer className="bg-white border-t border-gray-200 text-gray-600 py-4 px-8">
+        <footer className="bg-white border-t border-gray-200 text-gray-600 py-5 px-8">
           <div className="container mx-auto text-center md:text-left">
             &copy; {new Date().getFullYear()} Get Demo - Levy
           </div>

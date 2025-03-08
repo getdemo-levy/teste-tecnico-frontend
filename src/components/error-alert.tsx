@@ -1,9 +1,5 @@
+import { ErrorAlertProps } from '@/interfaces/error-alert-props.interface';
 import React from 'react';
-
-interface ErrorAlertProps {
-  message: string;
-  onBack: () => void;
-}
 
 const ErrorAlert: React.FC<ErrorAlertProps> = ({ message, onBack }) => {
   return (
