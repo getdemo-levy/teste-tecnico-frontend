@@ -32,12 +32,27 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
       target.focus();
       Object.assign(target.style, {
         outline: '2px solid #3B82F6',
-        minHeight: '1em',
+        borderRadius: '4px',
+        boxShadow: '0 0 8px rgba(59, 130, 246, 0.3)',
+        minHeight: '32px',
+        transition: 'all 0.2s ease',
+        padding: '4px 8px',
+        margin: '2px'
       });
       
       dispatch(setEditing(true));
 
       const blurHandler = () => {
+        Object.assign(target.style, {
+          outline: '',
+          borderRadius: '',
+          boxShadow: '',
+          minHeight: '',
+          transition: '',
+          padding: '',
+          margin: ''
+        });
+        
         dispatch(updateHtml(iframeDoc.documentElement.outerHTML));
         target.removeEventListener('blur', blurHandler);
       };
