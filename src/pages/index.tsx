@@ -5,8 +5,10 @@ import { Demo } from '@/interfaces/demo.interface';
 import { useFetch } from '@/hooks/use-fetch.hook';
 import { ResponseApi } from '@/interfaces/response-api.interface';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 const HomePage: React.FC = () => {
-  const { data: demosData, loading, error } = useFetch<ResponseApi<Demo[]>>('http://localhost:3000/api/demos');
+  const { data: demosData, loading, error } = useFetch<ResponseApi<Demo[]>>(`${apiUrl}/demos`);
   if (loading) return <p>Carregando...</p>;
   if (error) return <p>{error}</p>;
 
