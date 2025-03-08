@@ -12,10 +12,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title = "Get Demo Levy" }) =>
         <meta name="description" content="Get Demo - Visualize demos interativamente" />
       </Head>
 
-      <aside className="w-24 bg-gradient-to-b from-blue-600 to-blue-500 shadow-lg flex flex-col justify-between fixed h-full">
+      <aside className="w-22 bg-gradient-to-b from-blue-600 to-blue-500 shadow-lg flex flex-col justify-between fixed h-full">
         <div className="p-4 flex justify-center items-center h-24">
-          <Link href="/" className="text-white text-0.5 font-bold hover:opacity-80 transition-opacity text-center">
-            GetDemo
+          <Link href="/" className="text-white font-bold hover:opacity-80 transition-opacity text-center">
+            <span className="font-bold">get</span><span className="font-light">demo</span>
           </Link>
         </div>
 
