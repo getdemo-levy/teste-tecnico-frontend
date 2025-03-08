@@ -23,9 +23,13 @@ export const fetchDemos = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get<ResponseApi<Demo[]>>(`${apiUrl}/demos`);
-      return response.data.dados;
+      return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(
+        error.response?.data?.message ||
+        error.message ||
+        'Erro ao carregar demos'
+      );
     }
   }
 );
@@ -35,18 +39,20 @@ const homeSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchDemos.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchDemos.fulfilled, (state, action) => {
-      state.loading = false;
-      state.demos = action.payload;
-    });
-    builder.addCase(fetchDemos.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
+    builder
+      .addCase(fetchDemos.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDemos.fulfilled, (state, action) => {
+        state.loading = false;
+        state.demos = action.payload;
+      })
+      .addCase(fetchDemos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.demos = []; 
+      });
   },
 });
 
