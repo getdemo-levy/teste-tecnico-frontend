@@ -35,6 +35,13 @@ const DemoPage: React.FC = () => {
     dispatch(saveHtmlAction(newHtml));
   };
 
+  const handleCancelEdit = (options = {}) => {
+    // If we need to do anything when editing is canceled,
+    // we can handle it here. For now, we're just ensuring
+    // we don't reset the selected frame unless needed.
+    console.log("Edit canceled with options:", options);
+  };
+
   const saveAllChanges = () => {
     if (!demoDetails) return;
     
@@ -128,7 +135,8 @@ const DemoPage: React.FC = () => {
           />
           <FrameEditor 
             selectedFrame={selectedFrame} 
-            onSave={handleSaveHtml} 
+            onSave={handleSaveHtml}
+            onCancel={handleCancelEdit}
           />
         </div>
       </div>

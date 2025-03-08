@@ -37,7 +37,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = "Get Demo Levy" }) =>
         </main>
 
         <footer className="bg-white border-t border-gray-200 text-gray-600 py-5 px-8">
-          <div className="container mx-auto text-center md:text-left">
+          <div className="container text-right md:text-right">
             &copy; {new Date().getFullYear()} Get Demo - Levy
           </div>
         </footer>

@@ -1,10 +1,5 @@
+import { IframeEditingState } from '@/interfaces/iframe-editing-state.interface';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface IframeEditingState {
-  editedHtml: string;
-  originalHtml: string;
-  isEditing: boolean;
-}
 
 const initialState: IframeEditingState = {
   editedHtml: '',
@@ -25,6 +20,7 @@ const iframeEditingSlice = createSlice({
     },
     setEditing(state, action: PayloadAction<boolean>) {
       state.isEditing = action.payload;
+      state.originalHtml = state.editedHtml;
     },
     saveEditing(state) {
       state.isEditing = false;
@@ -33,7 +29,7 @@ const iframeEditingSlice = createSlice({
     cancelEditing(state) {
       state.isEditing = false;
       state.editedHtml = state.originalHtml;
-    },
+    }
   },
 });
 

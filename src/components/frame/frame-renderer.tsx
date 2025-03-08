@@ -100,10 +100,17 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
   };
 
   const handleCancelClick = () => {
-    dispatch(cancelEditing());
-    onCancel();
-    removeOutline();
-  };
+  dispatch(cancelEditing());
+  removeOutline();
+  
+  if (iframeRef.current) {
+    iframeRef.current.srcdoc = html;
+  }
+  
+  if (typeof onCancel === 'function') {
+    onCancel({ preserveCurrentFrame: true });
+  }
+};
 
   return (
     <div className="relative">
