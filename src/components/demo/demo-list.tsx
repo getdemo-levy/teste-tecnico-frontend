@@ -17,6 +17,7 @@ const DemoList: React.FC<DemoListProps> = ({ demos }) => {
           <Link
             href={`/demo/${demo.id}`}
             className="text-lg font-bold text-blue-500 hover:underline"
+            target="_blank"
           >
             {demo.name}
           </Link>

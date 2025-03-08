@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import DemoList from '../components/demo/demo-list';
 import Layout from '../components/Layout';
 import { Demo } from '@/interfaces/demo.interface';
+import { useFetch } from '@/hooks/use-fetch.hook';
+import { ResponseApi } from '@/interfaces/response-api.interface';
 
 const HomePage: React.FC = () => {
-  const [demos, setDemos] = useState<Demo[]>([]);
-
-  useEffect(() => {
-    fetch('http://localhost:3000/api/demos')
-      .then((res) => res.json())
-      .then((data) => setDemos(data?.dados))
-      .catch((error) => console.error('Erro ao carregar demos', error));
-  }, []);
+  const { data: demosData, loading, error } = useFetch<ResponseApi<Demo[]>>('http://localhost:3000/api/demos');
+  if (loading) return <p>Carregando...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <Layout title="Lista de Demos">
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-4">Lista de Demos</h1>
-        <DemoList demos={demos} />
-      </div>
+      {demosData?.dados?.length ?
+        <div className="container mx-auto p-4">
+          <h1 className="text-3xl font-bold mb-4">Lista de Demos</h1>
+          <DemoList demos={demosData.dados} />
+        </div> : (
+        <p>Nenhum demo encontrado.</p>
+      )
+      }
     </Layout>
   );
 };
