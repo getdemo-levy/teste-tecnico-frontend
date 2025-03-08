@@ -20,26 +20,64 @@ const DemoPage: React.FC = () => {
     useFetch<ResponseApi<Frame[]>>(id ? `${apiUrl}/demos/${id}/frames` : '');
 
   const [selectedFrame, setSelectedFrame] = useState<Frame | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedFrameHtml, setEditedFrameHtml] = useState<string | null>(null);
+  const [frames, setFrames] = useState<Frame[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
   useEffect(() => {
     if (demo?.dados?.length) {
-      const sortedFrames = demo.dados.toSorted((a, b) => a.order - b.order);
+      const sortedFrames = [...demo.dados].sort((a, b) => a.order - b.order);
+      setFrames(sortedFrames);
       setSelectedFrame(sortedFrames[0]);
     }
   }, [demo]);
 
-  const handleSave = (html: string) => {
-    if (selectedFrame) {
-      setEditedFrameHtml(html);
-      setIsEditing(false);
+  const handleSaveHtml = (newHtml: string) => {
+    if (!selectedFrame) return;
+    
+    const updatedFrame: Frame = {
+      ...selectedFrame,
+      html: newHtml
+    };
+    
+    const updatedFrames = frames.map(frame => 
+      frame.id === selectedFrame.id ? updatedFrame : frame
+    );
+    
+    setFrames(updatedFrames);
+    setSelectedFrame(updatedFrame);
+    setHasUnsavedChanges(true);
+
+  };
+
+  const handleCancelEdit = () => {
+    console.log("Edição cancelada");
+  };
+
+  const saveFrameToServer = async (frame: Frame) => {
+    try {
+      const response = await fetch(`${apiUrl}/demos/${id}/frames/${frame.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(frame),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao salvar alterações');
+      }
+      
+      setHasUnsavedChanges(false);
+      console.log('Frame salvo com sucesso');
+    } catch (error) {
+      console.error('Erro ao salvar frame:', error);
     }
   };
 
-  const handleCancel = () => {
-    setEditedFrameHtml(null);
-    setIsEditing(false);
+  const saveAllChanges = () => {
+    if (hasUnsavedChanges && selectedFrame) {
+      saveFrameToServer(selectedFrame);
+    }
   };
 
   if (loading || loadingDetails) {
@@ -77,24 +115,51 @@ const DemoPage: React.FC = () => {
     );
   }
 
-  const sortedFrames = demo?.dados?.toSorted((a, b) => a.order - b.order) || [];
-  const demoName = demoDetails?.dados?.name || 'Demo sem nome';
+  if (!demo || !demoDetails) {
+    return (
+      <Layout title="Demo não encontrada">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Demo não encontrada</h2>
+          <p className="text-gray-600 mb-8">O conteúdo que você está procurando pode ter sido removido ou não existe.</p>
+          <button 
+            onClick={() => router.push('/')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition-colors"
+          >
+            Voltar para a página inicial
+          </button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const demoName = demoDetails.dados?.name || 'Demo sem nome';
 
   return (
     <Layout title={demoName}>
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center text-sm text-gray-500 mb-6">
-          <button
-            onClick={() => router.push('/')}
-            className="hover:text-blue-600 transition-colors cursor-pointer"
-          >
-            Home
-          </button>
-          <span className="mx-2">›</span>
-          <span className="font-medium text-gray-700">{demoName}</span>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center text-sm text-gray-500">
+            <button
+              onClick={() => router.push('/')}
+              className="hover:text-blue-600 transition-colors cursor-pointer"
+            >
+              Home
+            </button>
+            <span className="mx-2">›</span>
+            <span className="font-medium text-gray-700">{demoName}</span>
+          </div>
+          
+          {hasUnsavedChanges && (
+            <button
+              onClick={saveAllChanges}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            >
+              Salvar todas alterações
+            </button>
+          )}
         </div>
 
-        {demo && demo.dados?.length > 0 && (
+        {frames.length > 0 && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="border-b border-gray-200 p-4 bg-gray-50">
               <label htmlFor="frame-select" className="block text-sm font-medium text-gray-700 mb-2">
@@ -104,39 +169,47 @@ const DemoPage: React.FC = () => {
                 <select
                   id="frame-select"
                   onChange={(e) => {
-                    const frame = demo?.dados.find((f) => f.id === e.target.value);
+                    const frame = frames.find((f) => f.id === e.target.value);
                     if (frame) setSelectedFrame(frame);
                   }}
                   className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md shadow-sm appearance-none"
                   value={selectedFrame?.id}
                 >
-                  {sortedFrames.map((frame, index) => (
+                  {frames.map((frame, index) => (
                     <option key={frame.id} value={frame.id}>
                       Frame {index + 1} {frame.id && `- ${frame.id}`}
                     </option>
                   ))}
                 </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
               </div>
             </div>
 
             <div className="p-4">
               {selectedFrame && (
                 <div className="border border-gray-200 rounded-md w-full">
-                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center">
-                    <div className="flex space-x-1 mr-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="flex space-x-1 mr-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      </div>
+                      <p className="text-xs text-gray-600 truncate">
+                        {selectedFrame.id || `Frame ${frames.indexOf(selectedFrame) + 1}`}
+                      </p>
                     </div>
-                    <p className="text-xs text-gray-600 truncate">
-                      {selectedFrame.id || `Frame ${sortedFrames.indexOf(selectedFrame) + 1}`}
-                    </p>
+                    <p className="text-xs text-gray-500">Dica: clique duas vezes em um texto para editá-lo</p>
                   </div>
                   <div className="w-full">
                     <FrameRenderer 
                       html={selectedFrame.html} 
-                      onSave={handleSave} 
-                      onCancel={handleCancel} 
+                      onSave={handleSaveHtml}
+                      onCancel={handleCancelEdit}
                     />
                   </div>
                 </div>
