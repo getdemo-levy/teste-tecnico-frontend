@@ -1,13 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
-import demoReducer from '../features/demo/demo-slice';
+import iframeEditingReducer from './iframe-editing.slice';
+import demoReducer from './demo.slice';
+import homeReducer from './home.slice';
 
 export const store = configureStore({
   reducer: {
+    iframeEditing: iframeEditingReducer,
     demo: demoReducer,
-    // Outros slices podem ser adicionados aqui
+    home: homeReducer,
   },
 });
 
-// Tipos para uso com hooks (useDispatch, useSelector)
 export type RootState = ReturnType<typeof store.getState>;
+
 export type AppDispatch = typeof store.dispatch;

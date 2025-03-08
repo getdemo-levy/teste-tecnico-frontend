@@ -1,69 +1,113 @@
-import { GetServerSideProps, NextPage } from 'next';
-import React from 'react';
-import FrameRenderer from '@/components/frame/frame-renderer';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useSelector, useDispatch } from 'react-redux';
 import Layout from '@/components/Layout';
+import ErrorAlert from '@/components/error-alert';
+import FrameEditor from '@/components/frame/frame-editor';
+import FrameSelector from '@/components/frame/frame-selector';
+import LoadingSpinner from '@/components/loading-spinner';
+import { AppDispatch, RootState } from '@/store';
+import { fetchDemoData, setSelectedFrame, saveHtmlAction } from '@/store/demo.slice';
 
-interface Frame {
-  id: string;
-  src: string;
-}
+const DemoPage: React.FC = () => {
+  const router = useRouter();
+  const { id } = router.query;
+  const dispatch = useDispatch<AppDispatch>();
 
-interface DemoPageProps {
-  demo: {
-    id: string;
-    title: string;
-    frames: Frame[];
+  const { demoDetails, frames, selectedFrame, hasUnsavedChanges, loading, error } = useSelector(
+    (state: RootState) => state.demo
+  );
+
+  useEffect(() => {
+    if (typeof id === 'string') {
+      dispatch(fetchDemoData(id));
+    }
+  }, [id, dispatch]);
+
+  const handleSaveHtml = (newHtml: string) => {
+    dispatch(saveHtmlAction(newHtml));
   };
-}
 
-const DemoPage: NextPage<DemoPageProps> = ({ demo }) => {
-  const [selectedFrame, setSelectedFrame] = React.useState<Frame>(demo.frames[0]);
+
+  const saveAllChanges = () => {
+    // Aqui você pode despachar outro thunk para salvar no servidor,
+    // ou chamar uma função que utilize o estado do Redux.
+  };
+
+  if (loading) {
+    return (
+      <Layout title="Carregando...">
+        <LoadingSpinner message="Carregando demo..." />
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout title="Erro">
+        <ErrorAlert message={error} onBack={() => router.push('/')} />
+      </Layout>
+    );
+  }
+
+  if (!demoDetails || frames.length === 0) {
+    return (
+      <Layout title="Demo não encontrada">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Demo não encontrada</h2>
+          <p className="text-gray-600 mb-8">
+            O conteúdo que você está procurando pode ter sido removido ou não existe.
+          </p>
+          <button 
+            onClick={() => router.push('/')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition-colors"
+          >
+            Voltar para a página inicial
+          </button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const demoName = demoDetails.name || 'Demo sem nome';
 
   return (
-    <Layout title={demo.title}>
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold">{demo.title}</h1>
-        <div className="mt-4">
-          <select
-            onChange={(e) => {
-              const frame = demo.frames.find(f => f.id === e.target.value);
-              if (frame) setSelectedFrame(frame);
-            }}
-            className="border p-2"
-          >
-            {demo.frames.map(frame => (
-              <option key={frame.id} value={frame.id}>
-                Frame {frame.id}
-              </option>
-            ))}
-          </select>
+    <Layout title={demoName}>
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center text-sm text-gray-500">
+            <button 
+              onClick={() => router.push('/')}
+              className="hover:text-blue-600 transition-colors cursor-pointer"
+            >
+              Home
+            </button>
+            <span className="mx-2">›</span>
+            <span className="font-medium text-gray-700">{demoName}</span>
+          </div>
+          {hasUnsavedChanges && (
+            <button
+              onClick={saveAllChanges}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            >
+              Salvar todas alterações
+            </button>
+          )}
         </div>
-        <div className="mt-4">
-          <FrameRenderer src={selectedFrame.src} />
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <FrameSelector 
+            frames={frames} 
+            selectedFrame={selectedFrame} 
+            onSelect={(frame) => dispatch(setSelectedFrame(frame))}
+          />
+          <FrameEditor 
+            selectedFrame={selectedFrame} 
+            onSave={handleSaveHtml} 
+          />
         </div>
       </div>
     </Layout>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id } = context.params!;
-  
-  // Exemplo de dados; aqui você faria a chamada para o backend
-  const demo = {
-    id,
-    title: 'Demo Exemplo',
-    frames: [
-      { id: '1', src: 'https://example.com/frame1' },
-      { id: '2', src: 'https://example.com/frame2' },
-    ],
-  };
-
-  return {
-    props: {
-      demo,
-    },
-  };
 };
 
 export default DemoPage;
