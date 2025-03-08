@@ -2,8 +2,16 @@ import React from 'react';
 import FrameRenderer from '@/components/frame/frame-renderer';
 import { FrameEditorProps } from '@/interfaces/frame-editor-props.interface';
 
-const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave }) => {
+const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave, onCancel }) => {
   if (!selectedFrame) return null;
+  
+  const handleCancel = (options = {}) => {
+    console.log("Edição cancelada", options);
+    if (typeof onCancel === 'function') {
+      onCancel(options);
+    }
+  };
+
   return (
     <div className="p-4">
       <div className="border border-gray-200 rounded-md w-full">
@@ -24,7 +32,7 @@ const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave }) => {
           <FrameRenderer 
             html={selectedFrame.html} 
             onSave={onSave} 
-            onCancel={() => console.log("Edição cancelada")} 
+            onCancel={handleCancel} 
           />
         </div>
       </div>
