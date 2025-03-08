@@ -1,10 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import iframeEditingReducer from './iframe-editing-slice';
+import demoReducer from './demo.slice';
 
 export const store = configureStore({
   reducer: {
     iframeEditing: iframeEditingReducer,
-    // outros slices aqui...
+    demo: demoReducer,
   },
 });
 
