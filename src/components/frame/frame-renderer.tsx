@@ -1,13 +1,13 @@
 import React from 'react';
 
 interface FrameRendererProps {
-  src: string;
+  html: string;
 }
 
-const FrameRenderer: React.FC<FrameRendererProps> = ({ src }) => {
+const FrameRenderer: React.FC<FrameRendererProps> = ({ html }) => {
   return (
     <iframe
-      src={src}
+      srcDoc={html}
       className="w-full h-96 border"
       title="Frame Renderer"
     />

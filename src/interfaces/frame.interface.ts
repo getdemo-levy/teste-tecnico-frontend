@@ -3,4 +3,5 @@ export interface Frame {
   demoId: string;
   html: string;
   order: number;
+  demo_name: string,
 }
