@@ -6,8 +6,6 @@ import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
 import { useDemoData } from '@/hooks/use-demo-data.hook';
 
-
-
 const DemoPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
