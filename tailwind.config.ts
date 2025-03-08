@@ -11,10 +11,7 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        'custom-yellow': '#F1D421',
-        'custom-pink': '#D04385',
-        'custom-blue': '#4AE1FC',
-        'custom-orange': '#FF6600',
+        'custom-blue': '#3055D9',
       },
     },
   },

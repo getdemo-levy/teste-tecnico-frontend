@@ -1,121 +1,46 @@
 import { useRouter } from 'next/router';
-import React, { useState, useEffect } from 'react';
-import FrameRenderer from '@/components/frame/frame-renderer';
 import Layout from '@/components/Layout';
-import { useFetch } from '@/hooks/use-fetch.hook';
-import { ResponseApi } from '@/interfaces/response-api.interface';
-import { Frame } from '@/interfaces/frame.interface';
-import { Demo } from '@/interfaces/demo.interface';
+import ErrorAlert from '@/components/error-alert';
+import FrameEditor from '@/components/frame/frame-editor';
+import FrameSelector from '@/components/frame/frame-selector';
+import LoadingSpinner from '@/components/loading-spinner';
+import { useDemoData } from '@/hooks/use-demo-data.hook';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 
 const DemoPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
 
-  const { data: demoDetails, loading: loadingDetails, error: errorDetails } = 
-    useFetch<ResponseApi<Demo>>(id ? `${apiUrl}/demos/${id}` : '');
+  const {
+    demoDetails,
+    frames,
+    selectedFrame,
+    setSelectedFrame,
+    handleSaveHtml,
+    saveAllChanges,
+    hasUnsavedChanges,
+    loading,
+    error,
+  } = useDemoData(id);
 
-  const { data: demo, loading, error } = 
-    useFetch<ResponseApi<Frame[]>>(id ? `${apiUrl}/demos/${id}/frames` : '');
-
-  const [selectedFrame, setSelectedFrame] = useState<Frame | null>(null);
-  const [frames, setFrames] = useState<Frame[]>([]);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (demo?.dados?.length) {
-      const sortedFrames = [...demo.dados].sort((a, b) => a.order - b.order);
-      setFrames(sortedFrames);
-      setSelectedFrame(sortedFrames[0]);
-    }
-  }, [demo]);
-
-  const handleSaveHtml = (newHtml: string) => {
-    if (!selectedFrame) return;
-    
-    const updatedFrame: Frame = {
-      ...selectedFrame,
-      html: newHtml
-    };
-    
-    const updatedFrames = frames.map(frame => 
-      frame.id === selectedFrame.id ? updatedFrame : frame
-    );
-    
-    setFrames(updatedFrames);
-    setSelectedFrame(updatedFrame);
-    setHasUnsavedChanges(true);
-
-  };
-
-  const handleCancelEdit = () => {
-    console.log("Edição cancelada");
-  };
-
-  const saveFrameToServer = async (frame: Frame) => {
-    try {
-      const response = await fetch(`${apiUrl}/demos/${id}/frames/${frame.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(frame),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Falha ao salvar alterações');
-      }
-      
-      setHasUnsavedChanges(false);
-      console.log('Frame salvo com sucesso');
-    } catch (error) {
-      console.error('Erro ao salvar frame:', error);
-    }
-  };
-
-  const saveAllChanges = () => {
-    if (hasUnsavedChanges && selectedFrame) {
-      saveFrameToServer(selectedFrame);
-    }
-  };
-
-  if (loading || loadingDetails) {
+  if (loading) {
     return (
       <Layout title="Carregando...">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="h-12 w-12 mb-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
-            <p className="text-gray-600 font-medium">Carregando demo...</p>
-          </div>
-        </div>
+        <LoadingSpinner message="Carregando demo..." />
       </Layout>
     );
   }
 
-  if (error || errorDetails) {
+  if (error) {
     return (
       <Layout title="Erro">
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-md my-6">
-          <div className="flex items-center">
-            <div className="text-red-500 text-2xl mr-4">⚠️</div>
-            <div>
-              <p className="font-medium text-red-800">Ocorreu um erro</p>
-              <p className="text-red-700">{error || errorDetails || 'Não foi possível carregar a demo'}</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => router.push('/')}
-            className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors"
-          >
-            Voltar para a lista de demos
-          </button>
-        </div>
+        <ErrorAlert message={error} onBack={() => router.push('/')} />
       </Layout>
     );
   }
 
-  if (!demo || !demoDetails) {
+  if (!demoDetails || frames.length === 0) {
     return (
       <Layout title="Demo não encontrada">
         <div className="text-center py-12">
@@ -139,7 +64,7 @@ const DemoPage: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center text-sm text-gray-500">
-            <button
+            <button 
               onClick={() => router.push('/')}
               className="hover:text-blue-600 transition-colors cursor-pointer"
             >
@@ -148,7 +73,6 @@ const DemoPage: React.FC = () => {
             <span className="mx-2">›</span>
             <span className="font-medium text-gray-700">{demoName}</span>
           </div>
-          
           {hasUnsavedChanges && (
             <button
               onClick={saveAllChanges}
@@ -158,65 +82,17 @@ const DemoPage: React.FC = () => {
             </button>
           )}
         </div>
-
-        {frames.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="border-b border-gray-200 p-4 bg-gray-50">
-              <label htmlFor="frame-select" className="block text-sm font-medium text-gray-700 mb-2">
-                Selecione o frame:
-              </label>
-              <div className="relative">
-                <select
-                  id="frame-select"
-                  onChange={(e) => {
-                    const frame = frames.find((f) => f.id === e.target.value);
-                    if (frame) setSelectedFrame(frame);
-                  }}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md shadow-sm appearance-none"
-                  value={selectedFrame?.id}
-                >
-                  {frames.map((frame, index) => (
-                    <option key={frame.id} value={frame.id}>
-                      Frame {index + 1} {frame.id && `- ${frame.id}`}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4">
-              {selectedFrame && (
-                <div className="border border-gray-200 rounded-md w-full">
-                  <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="flex space-x-1 mr-2">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      </div>
-                      <p className="text-xs text-gray-600 truncate">
-                        {selectedFrame.id || `Frame ${frames.indexOf(selectedFrame) + 1}`}
-                      </p>
-                    </div>
-                    <p className="text-xs text-gray-500">Dica: clique duas vezes em um texto para editá-lo</p>
-                  </div>
-                  <div className="w-full">
-                    <FrameRenderer 
-                      html={selectedFrame.html} 
-                      onSave={handleSaveHtml}
-                      onCancel={handleCancelEdit}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <FrameSelector 
+            frames={frames} 
+            selectedFrame={selectedFrame} 
+            onSelect={setSelectedFrame} 
+          />
+          <FrameEditor 
+            selectedFrame={selectedFrame} 
+            onSave={handleSaveHtml} 
+          />
+        </div>
       </div>
     </Layout>
   );

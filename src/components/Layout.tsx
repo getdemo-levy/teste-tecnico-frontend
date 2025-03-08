@@ -20,10 +20,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title = "Get Demo Levy" }) =>
           <Link href="/" className="flex items-center space-x-2 transition-transform hover:scale-105">
             <span className="text-2xl font-bold">Get Demo</span>
           </Link>
-          
-          <nav className="hidden md:flex space-x-6">
-            <Link href="/" className="hover:text-blue-100 font-medium">Home</Link>
-          </nav>
         </div>
       </header>
       
