@@ -39,7 +39,7 @@ const demoSlice = createSlice({
     setSelectedFrame(state, action: PayloadAction<Frame>) {
       state.selectedFrame = action.payload;
     },
-    handleSaveHtml(state, action: PayloadAction<string>) {
+    saveHtmlAction(state, action: PayloadAction<string>) {
       if (!state.selectedFrame) return;
       const updatedFrame: Frame = { ...state.selectedFrame, html: action.payload };
       state.frames = state.frames.map(frame =>
@@ -70,5 +70,5 @@ const demoSlice = createSlice({
   },
 });
 
-export const { setSelectedFrame, handleSaveHtml, clearUnsavedChanges } = demoSlice.actions;
+export const { setSelectedFrame, saveHtmlAction, clearUnsavedChanges } = demoSlice.actions;
 export default demoSlice.reducer;

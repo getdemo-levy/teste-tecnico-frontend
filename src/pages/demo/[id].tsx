@@ -1,26 +1,38 @@
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useSelector, useDispatch } from 'react-redux';
 import Layout from '@/components/Layout';
 import ErrorAlert from '@/components/error-alert';
 import FrameEditor from '@/components/frame/frame-editor';
 import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
-import { useDemoData } from '@/hooks/use-demo-data.hook';
+import { AppDispatch, RootState } from '@/store';
+import { fetchDemoData, setSelectedFrame, saveHtmlAction } from '@/store/demo.slice';
 
 const DemoPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
+  const dispatch = useDispatch<AppDispatch>();
 
-  const {
-    demoDetails,
-    frames,
-    selectedFrame,
-    setSelectedFrame,
-    handleSaveHtml,
-    saveAllChanges,
-    hasUnsavedChanges,
-    loading,
-    error,
-  } = useDemoData(id);
+  const { demoDetails, frames, selectedFrame, hasUnsavedChanges, loading, error } = useSelector(
+    (state: RootState) => state.demo
+  );
+
+  useEffect(() => {
+    if (typeof id === 'string') {
+      dispatch(fetchDemoData(id));
+    }
+  }, [id, dispatch]);
+
+  const handleSaveHtml = (newHtml: string) => {
+    dispatch(saveHtmlAction(newHtml));
+  };
+
+
+  const saveAllChanges = () => {
+    // Aqui você pode despachar outro thunk para salvar no servidor,
+    // ou chamar uma função que utilize o estado do Redux.
+  };
 
   if (loading) {
     return (
@@ -43,7 +55,9 @@ const DemoPage: React.FC = () => {
       <Layout title="Demo não encontrada">
         <div className="text-center py-12">
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">Demo não encontrada</h2>
-          <p className="text-gray-600 mb-8">O conteúdo que você está procurando pode ter sido removido ou não existe.</p>
+          <p className="text-gray-600 mb-8">
+            O conteúdo que você está procurando pode ter sido removido ou não existe.
+          </p>
           <button 
             onClick={() => router.push('/')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-md transition-colors"
@@ -55,7 +69,7 @@ const DemoPage: React.FC = () => {
     );
   }
 
-  const demoName = demoDetails.dados?.name || 'Demo sem nome';
+  const demoName = demoDetails.name || 'Demo sem nome';
 
   return (
     <Layout title={demoName}>
@@ -84,7 +98,7 @@ const DemoPage: React.FC = () => {
           <FrameSelector 
             frames={frames} 
             selectedFrame={selectedFrame} 
-            onSelect={setSelectedFrame} 
+            onSelect={(frame) => dispatch(setSelectedFrame(frame))}
           />
           <FrameEditor 
             selectedFrame={selectedFrame} 
