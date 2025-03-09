@@ -106,7 +106,13 @@ const DemoPage: React.FC = () => {
 
   return (
     <Layout title={demoName}>
-      <FullscreenModal selectedFrame={selectedFrame} onSave={handleSaveHtml} onCancel={handleCancelEdit} />
+    <FullscreenModal 
+      selectedFrame={selectedFrame}
+      onSave={handleSaveHtml}
+      onCancel={handleCancelEdit}
+      frames={frames}
+      onSelectFrame={(index) => dispatch(setSelectedFrame(frames[index]))}
+    />
 
       <div className="max-w-8xl mx-auto py-2">
         <div className="flex items-center justify-between mb-6">

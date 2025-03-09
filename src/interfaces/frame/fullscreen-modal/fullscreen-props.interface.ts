@@ -1,7 +1,9 @@
-import { Frame } from "./frame/frame.interface";
+import { Frame } from "../frame.interface";
 
 export interface FullscreenProps {
-  onSave: (html: string) => Promise<void>;
-  onCancel: (options?: { preserveCurrentFrame?: boolean }) => void;
   selectedFrame: Frame | null;
+  frames: Frame[];
+  onSave: (html: string) => Promise<void>;
+  onCancel: () => void;
+  onSelectFrame: (index: number) => void;
 }

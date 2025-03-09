@@ -22,7 +22,7 @@ const iframeEditingSlice = createSlice({
       state.editedHtml = action.payload.html;
       state.currentFrameId = action.payload.frameId;
     },
-    updateHtml(state, action: PayloadAction<{ html: string; frameId: string }>) { // Corrigido o payload
+    updateHtml(state, action: PayloadAction<{ html: string; frameId: string }>) {
       if (action.payload.frameId === state.currentFrameId &&
         action.payload.html !== state.editedHtml) {
         state.editedHtml = action.payload.html;
@@ -52,7 +52,7 @@ export const selectIsFullscreen = (state: RootState) => state.iframeEditing.isFu
 export const {
   setFullscreen,
   initializeFrame,
-  updateHtml, // Export corrigido
+  updateHtml,
   resetFrame,
   setEditing
 } = iframeEditingSlice.actions;

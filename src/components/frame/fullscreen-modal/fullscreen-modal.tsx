@@ -14,7 +14,13 @@ import { EditableIframe } from './editable-frame';
 import { ModalHeader } from './modal-header';
 import { Tooltip } from './tooltip';
 
-export const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onCancel }) => {
+export const FullscreenModal: React.FC<FullscreenProps> = ({
+  selectedFrame,
+  frames,
+  onSave,
+  onCancel,
+  onSelectFrame,
+}) => {
   const dispatch = useDispatch();
   const { isFullscreen, editedHtml, originalHtml, currentFrameId } = useSelector(
     (state: RootState) => state.iframeEditing
@@ -106,6 +112,8 @@ export const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSa
 
   if (!selectedFrame) return null;
 
+  const currentFrameIndex = frames.findIndex(f => f.id === selectedFrame?.id);
+
   return (
     <AnimatePresence>
       {isFullscreen && (
@@ -142,6 +150,9 @@ export const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSa
             onCancel={() => hasChanges ? setShowCancelConfirmation(true) : handleCancelConfirmed()}
             onClose={() => dispatch(setFullscreen(false))}
             hasChanges={hasChanges}
+            frames={frames}
+            currentFrameIndex={currentFrameIndex}
+            onSelectFrame={onSelectFrame}
           />
 
           <Tooltip
