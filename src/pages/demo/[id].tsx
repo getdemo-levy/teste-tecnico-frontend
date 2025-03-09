@@ -6,9 +6,11 @@ import ErrorAlert from '@/components/error-alert';
 import FrameEditor from '@/components/frame/frame-editor';
 import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
+import FullscreenModal from '@/components/fullscreen-modal';
 import { AppDispatch, RootState } from '@/store';
 import { fetchDemoData, setSelectedFrame, saveHtmlAction } from '@/store/demo.slice';
 import { updateFrame } from '@/store/demo.slice';
+import { setFullscreen } from '@/store/iframe-editing.slice';
 
 const DemoPage: React.FC = () => {
   const router = useRouter();
@@ -36,9 +38,6 @@ const DemoPage: React.FC = () => {
   };
 
   const handleCancelEdit = (options = {}) => {
-    // If we need to do anything when editing is canceled,
-    // we can handle it here. For now, we're just ensuring
-    // we don't reset the selected frame unless needed.
     console.log("Edit canceled with options:", options);
   };
 
@@ -95,6 +94,9 @@ const DemoPage: React.FC = () => {
 
   return (
     <Layout title={demoName}>
+      {/* Modal Fullscreen */}
+      <FullscreenModal />
+
       <div className="max-w-8xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center text-sm text-gray-500">
@@ -127,17 +129,31 @@ const DemoPage: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <FrameEditor 
-            selectedFrame={selectedFrame} 
-            onSave={handleSaveHtml}
-            onCancel={handleCancelEdit}
-          />
-          <FrameSelector 
-            frames={frames} 
-            selectedFrame={selectedFrame} 
-            onSelect={(frame) => dispatch(setSelectedFrame(frame))}
-          />
+        <div className="flex gap-10 p-1">
+          <div className='w-[30%] flex flex-col justify-center align-middle gap-4'>
+            <span className='text-3xl'>Frame: </span>
+            <span className='text-3xl font-bold'>{selectedFrame?.id}</span>
+            <div className="flex justify-start space-x-2 mt-2">
+              <button
+                onClick={() => dispatch(setFullscreen(true))}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Visualizar Fullscreen
+              </button>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-md overflow-hidden flex-col w-[70%]">
+            <FrameEditor 
+              selectedFrame={selectedFrame} 
+              onSave={handleSaveHtml}
+              onCancel={handleCancelEdit}
+            />
+            <FrameSelector 
+              frames={frames} 
+              selectedFrame={selectedFrame}
+              onSelect={(frame) => dispatch(setSelectedFrame(frame))}
+            />
+          </div>
         </div>
       </div>
     </Layout>

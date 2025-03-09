@@ -54,7 +54,7 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
       <iframe
         ref={iframeRef}
         srcDoc={editedHtml || html}
-        className={`w-full h-[50vh] border-0 ${isEditing ? 'cursor-text' : ''}`}
+        className={`w-full h-[40vh] border-0 ${isEditing ? 'cursor-text' : ''}`}
         title="Frame Renderer"
         sandbox="allow-same-origin allow-scripts allow-forms"
         loading="lazy"

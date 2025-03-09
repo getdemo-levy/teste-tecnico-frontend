@@ -35,17 +35,16 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
           sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
           loading="lazy"
           style={{
-            pointerEvents: 'none', // Desativa interações
+            pointerEvents: 'none',
             width: '100%',
             height: '100%',
-            zoom: 0.5, // Suportado em alguns browsers
+            zoom: 0.5, 
           }}
         />
       </div>
     );
   };
 
-  // Verificar se há overflow e ajustar a UI de acordo
   useEffect(() => {
     const checkForOverflow = () => {
       if (scrollContainerRef.current) {
@@ -54,13 +53,10 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
       }
     };
 
-    // Verificar no carregamento e quando o tamanho da janela mudar
     checkForOverflow();
     
-    // Adicionar verificação após um pequeno atraso para garantir que o DOM está pronto
     const timer = setTimeout(checkForOverflow, 100);
     
-    // Adicionar listener para redimensionamento da janela
     window.addEventListener('resize', checkForOverflow);
     
     return () => {
@@ -69,13 +65,11 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
     };
   }, [frames]);
 
-  // Scroll para o frame selecionado quando ele mudar
   useEffect(() => {
     if (selectedFrame && scrollContainerRef.current) {
       try {
         const selectedElement = document.getElementById(`frame-${selectedFrame.id}`);
         if (selectedElement) {
-          // Abordagem simplificada de scroll
           selectedElement.scrollIntoView({
             behavior: 'smooth',
             block: 'nearest',
@@ -88,7 +82,6 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
     }
   }, [selectedFrame]);
 
-  // Funções de navegação simplificadas
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({ left: -150, behavior: 'smooth' });
@@ -167,7 +160,7 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
                   )}
                 </div>
                 <div className="flex-1 overflow-hidden p-1">
-                  <div className="h-[80px] w-full scale-50 origin-top-left"> {/* Container de escalonamento */}
+                  <div className="h-[80px] w-full scale-50 origin-top-left">
                     {createThumbnailPreview(frame.html)}
                   </div>
                 </div>

@@ -1,16 +1,20 @@
-import { IframeEditingState } from '@/interfaces/iframe-editing-state.interface';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { IframeEditingState } from "@/interfaces/iframe-editing-state.interface";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: IframeEditingState = {
   editedHtml: '',
   originalHtml: '',
   isEditing: false,
+  isFullscreen: false,
 };
 
 const iframeEditingSlice = createSlice({
   name: 'iframeEditing',
   initialState,
   reducers: {
+    setFullscreen(state, action: PayloadAction<boolean>) {
+      state.isFullscreen = action.payload;
+    },
     setInitialHtml(state, action: PayloadAction<string>) {
       state.originalHtml = action.payload;
       state.editedHtml = action.payload;
@@ -29,9 +33,10 @@ const iframeEditingSlice = createSlice({
     cancelEditing(state) {
       state.isEditing = false;
       state.editedHtml = state.originalHtml;
-    }
+    },
   },
 });
 
-export const { setInitialHtml, updateHtml, setEditing, saveEditing, cancelEditing } = iframeEditingSlice.actions;
+export const { setFullscreen, setInitialHtml, updateHtml, setEditing, saveEditing, cancelEditing } =
+  iframeEditingSlice.actions;
 export default iframeEditingSlice.reducer;
