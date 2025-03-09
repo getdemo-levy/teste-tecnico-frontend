@@ -3,12 +3,14 @@ import { useRouter } from 'next/router';
 import { useSelector, useDispatch } from 'react-redux';
 import Layout from '@/components/Layout';
 import ErrorAlert from '@/components/error-alert';
-import FrameEditor from '@/components/frame/frame-editor';
+import FramePreview from '@/components/frame/frame-preview';
 import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
+import FullscreenModal from '@/components/frame/fullscreen-modal';
 import { AppDispatch, RootState } from '@/store';
-import { fetchDemoData, setSelectedFrame, saveHtmlAction } from '@/store/demo.slice';
+import { fetchDemoData, setSelectedFrame } from '@/store/demo.slice';
 import { updateFrame } from '@/store/demo.slice';
+import { resetFrame, setFullscreen } from '@/store/iframe-editing.slice';
 
 const DemoPage: React.FC = () => {
   const router = useRouter();
@@ -31,15 +33,24 @@ const DemoPage: React.FC = () => {
     }
   }, [id, dispatch]);
 
-  const handleSaveHtml = (newHtml: string) => {
-    dispatch(saveHtmlAction(newHtml));
+  const handleSaveHtml = async (newHtml: string) => {
+    if (!demoDetails || !selectedFrame) return;
+    
+    try {
+      await dispatch(updateFrame({
+        id_demo: demoDetails.id,
+        id_frame: selectedFrame.id,
+        html: newHtml
+      })).unwrap();
+      
+      dispatch(resetFrame());
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+    }
   };
 
-  const handleCancelEdit = (options = {}) => {
-    // If we need to do anything when editing is canceled,
-    // we can handle it here. For now, we're just ensuring
-    // we don't reset the selected frame unless needed.
-    console.log("Edit canceled with options:", options);
+  const handleCancelEdit = () => {
+    dispatch(resetFrame());
   };
 
   const saveAllChanges = () => {
@@ -95,7 +106,9 @@ const DemoPage: React.FC = () => {
 
   return (
     <Layout title={demoName}>
-      <div className="max-w-6xl mx-auto">
+      <FullscreenModal selectedFrame={selectedFrame} onSave={handleSaveHtml} onCancel={handleCancelEdit} />
+
+      <div className="max-w-8xl mx-auto py-2">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center text-sm text-gray-500">
             <button 
@@ -127,17 +140,34 @@ const DemoPage: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <FrameSelector 
-            frames={frames} 
-            selectedFrame={selectedFrame} 
-            onSelect={(frame) => dispatch(setSelectedFrame(frame))}
-          />
-          <FrameEditor 
-            selectedFrame={selectedFrame} 
-            onSave={handleSaveHtml}
-            onCancel={handleCancelEdit}
-          />
+        <div className="flex gap-10 p-1">
+          <div className='w-[30%] flex flex-col justify-center align-middle gap-4'>
+            <span className='text-3xl'>Frame: </span>
+            <span className='text-3xl font-bold'>{selectedFrame?.id}</span>
+            <div className="flex justify-start space-x-2 mt-2">
+              <button
+                onClick={() => dispatch(setFullscreen(true))}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Visualizar Fullscreen
+              </button>
+            </div>
+            <div className="mt-3 p-2 bg-blue-50 text-sm text-black-700 rounded border border-blue-200">
+              <strong>Dica:</strong> Clique em <strong className="text-blue-700">&rdquo;Visualizar Fullscreen&rdquo;</strong> para editar o conteúdo do Frame.
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-md overflow-hidden flex-col w-[70%]">
+            <FramePreview 
+              selectedFrame={selectedFrame} 
+              onSave={handleSaveHtml}
+              onCancel={handleCancelEdit}
+            />
+            <FrameSelector 
+              frames={frames} 
+              selectedFrame={selectedFrame}
+              onSelect={(frame) => dispatch(setSelectedFrame(frame))}
+            />
+          </div>
         </div>
       </div>
     </Layout>

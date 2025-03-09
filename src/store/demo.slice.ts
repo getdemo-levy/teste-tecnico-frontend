@@ -33,7 +33,7 @@ export const fetchDemoData = createAsyncThunk(
 
       const frames = framesResponse.data.data
         .map(f => ({ ...f, isModified: false }))
-        .toSorted((a, b) => a.order - b.order);
+        .sort((a, b) => a.order - b.order);
 
       return {
         demoDetails: detailsResponse.data.data,
@@ -52,12 +52,14 @@ export const updateFrame = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await axios.put<ResponseApi<any>>(
+      await axios.put(
         `${apiUrl}/demos/${id_demo}/frames/${id_frame}`,
         { html }
       );
-      return response.data;
+
+      return { id_frame, html };
     } catch (error: any) {
+      console.error(error);
       return rejectWithValue(error.response?.data?.message || 'Erro ao salvar alterações');
     }
   }
@@ -88,6 +90,11 @@ const demoSlice = createSlice({
         ...frame,
         isModified: false
       }));
+
+      if (state.selectedFrame) {
+        state.selectedFrame.isModified = false;
+      }
+
       state.hasUnsavedChanges = false;
     },
   },
@@ -112,23 +119,20 @@ const demoSlice = createSlice({
         state.saving += 1;
         state.error = null;
       })
-      .addCase(updateFrame.fulfilled, (state, action: PayloadAction<ResponseApi<any>, string, { arg: UpdateFramePayload }>) => {
+      .addCase(updateFrame.fulfilled, (state, action) => {
+        const { id_frame, html } = action.payload;
         state.saving -= 1;
-        const { id_frame } = action.meta.arg;
 
-        state.frames = state.frames.map(frame => {
-          if (frame.id === id_frame) {
-            return {
-              ...frame,
-              html: action.meta.arg.html,
-              isModified: false
-            };
-          }
-          return frame;
-        });
+        state.frames = state.frames.map(frame =>
+          frame.id === id_frame ? {
+            ...frame,
+            html: html,
+            isModified: false
+          } : frame
+        );
 
         if (state.selectedFrame?.id === id_frame) {
-          state.selectedFrame = state.frames.find(f => f.id === id_frame) || null;
+          state.selectedFrame = { ...state.selectedFrame, html };
         }
 
         state.hasUnsavedChanges = state.frames.some(f => f.isModified);
@@ -136,6 +140,7 @@ const demoSlice = createSlice({
       .addCase(updateFrame.rejected, (state, action) => {
         state.saving -= 1;
         state.error = action.payload as string;
+        state.hasUnsavedChanges = true;
       });
   },
 });

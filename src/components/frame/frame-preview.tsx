@@ -2,18 +2,10 @@ import React from 'react';
 import FrameRenderer from '@/components/frame/frame-renderer';
 import { FrameEditorProps } from '@/interfaces/frame-editor-props.interface';
 
-const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave, onCancel }) => {
+const FramePreview: React.FC<FrameEditorProps> = ({ selectedFrame }) => {
   if (!selectedFrame) return null;
-  
-  const handleCancel = (options = {}) => {
-    console.log("Edição cancelada", options);
-    if (typeof onCancel === 'function') {
-      onCancel(options);
-    }
-  };
-
   return (
-    <div className="p-4">
+    <div className="p-2">
       <div className="border border-gray-200 rounded-md w-full">
         <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center">
@@ -26,13 +18,10 @@ const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave, onCanc
               {selectedFrame.id || `Frame`}
             </p>
           </div>
-          <p className="text-xs text-gray-500">Dica: clique duas vezes em um texto para editá-lo</p>
         </div>
         <div className="w-full">
           <FrameRenderer 
             html={selectedFrame.html} 
-            onSave={onSave} 
-            onCancel={handleCancel} 
           />
         </div>
       </div>
@@ -40,4 +29,4 @@ const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave, onCanc
   );
 };
 
-export default FrameEditor;
+export default FramePreview;
