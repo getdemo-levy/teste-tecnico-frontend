@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react'; // Importando o ícone de "X"
+import { X, Info } from 'lucide-react';
 import { RootState } from '@/store';
 import { setFullscreen } from '@/store/iframe-editing.slice';
 import SuccessNotification from './success-notification';
@@ -14,8 +14,32 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   const editedHtml = useSelector((state: RootState) => state.iframeEditing.editedHtml);
 
   const [showNotification, setShowNotification] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(true);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useNotification(showNotification, setShowNotification);
+
+  useEffect(() => {
+    if (isFullscreen) {
+      setShowTooltip(true);
+    }
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+        setShowTooltip(false);
+      }
+    }
+
+    if (showTooltip) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showTooltip]);
 
   if (!selectedFrame) return null;
 
@@ -29,26 +53,60 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
         >
-          <div className="absolute top-0 left-0 w-full bg-gray-900 text-white px-5 py-2 flex justify-end gap-3 shadow-md z-10">
+          <div className="absolute top-0 left-0 w-full bg-gray-900 text-white px-5 py-2 flex justify-between items-center shadow-md z-10">
             <button
-              onClick={() => onSave(editedHtml)}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded-lg transition-all"
+              onClick={() => setShowTooltip(true)}
+              className="text-white p-2 rounded-lg hover:bg-gray-700 transition-all"
             >
-              Salvar
+              <Info size={24} />
             </button>
-            <button
-              onClick={() => onCancel()}
-              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-lg transition-all"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={() => dispatch(setFullscreen(false))}
-              className="text-white p-2 rounded-lg hover:bg-red-700 transition-all"
-            >
-              <X size={18} />
-            </button>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => onSave(editedHtml)}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all"
+              >
+                Salvar
+              </button>
+              <button
+                onClick={() => onCancel()}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => dispatch(setFullscreen(false))}
+                className="text-white p-2 rounded-lg hover:bg-red-700 transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
           </div>
+
+          <AnimatePresence>
+            {showTooltip && (
+              <motion.div
+                ref={tooltipRef}
+                className="absolute top-12 left-4 bg-white text-gray-800 p-4 rounded-lg shadow-lg max-w-sm text-1x1 z-50"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p className="mb-2">
+                  <strong>Dica:</strong> Dê um <strong>duplo clique</strong> em um texto para editá-lo.  
+                  Use o botão <strong className="text-green-400">&ldquo;Salvar&ldquo;</strong> para confirmar as alterações no frame atual.  
+                  Você pode alternar entre os frames usando as <strong>setas da barra superior</strong>.
+                </p>
+                <button
+                  onClick={() => setShowTooltip(false)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs"
+                >
+                  Entendi
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="relative w-full h-full flex justify-center items-center pt-[50px]">
             <motion.div
