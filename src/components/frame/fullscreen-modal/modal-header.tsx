@@ -33,7 +33,6 @@ export const ModalHeader = ({
       </button>
 
       <div className="flex items-center gap-4">
-        {/* Setas de navegação */}
         <div className="flex gap-2">
           <button
             onClick={handlePrevFrame}
@@ -51,7 +50,6 @@ export const ModalHeader = ({
           </button>
         </div>
 
-        {/* Contador de frames */}
         <div className="text-sm font-medium">
           Frame {currentFrameIndex + 1} de {frames.length}
         </div>
@@ -68,7 +66,7 @@ export const ModalHeader = ({
             </button>
             <button
               onClick={onCancel}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-all"
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all"
             >
               Cancelar
             </button>

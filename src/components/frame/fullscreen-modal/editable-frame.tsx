@@ -1,13 +1,28 @@
 import DOMPurify from 'dompurify';
 import { EditableIframeProps } from '@/interfaces/frame/fullscreen-modal/editable-iframe-props.interface';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 export const EditableIframe = ({
   iframeRef,
   selectedFrameId,
   originalHtml
 }: EditableIframeProps) => {
-  const sanitizedHtml = DOMPurify.sanitize(originalHtml);
+  const [sanitizedHtml, setSanitizedHtml] = useState('');
+  
+  useEffect(() => {
+    DOMPurify.setConfig({
+      ADD_TAGS: ['iframe', 'script', 'style', 'link', 'meta'],
+      ADD_ATTR: ['srcDoc', 'sandbox', 'allow', 'frameborder', 'scrolling', 'target'],
+      ALLOW_DATA_ATTR: true,
+      FORCE_BODY: true,
+      KEEP_CONTENT: true,
+      WHOLE_DOCUMENT: true
+    });
+
+    const sanitized = DOMPurify.sanitize(originalHtml);
+    setSanitizedHtml(sanitized);
+  }, [originalHtml]);
 
   return (
     <div className="relative w-full h-full flex justify-center items-center pt-[50px]">
@@ -24,7 +39,8 @@ export const EditableIframe = ({
           key={selectedFrameId}
           srcDoc={sanitizedHtml}
           className="w-full h-full border-none"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-modals allow-popups"
+          allow="fullscreen"
         />
       </motion.div>
     </div>
