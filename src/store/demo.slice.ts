@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { ResponseApi } from '@/interfaces/response-api.interface';
 import { Demo } from '@/interfaces/demo.interface';
-import { Frame } from '@/interfaces/frame.interface';
+import { Frame } from '@/interfaces/frame/frame.interface';
 import { DemoState } from '@/interfaces/demo-state.interface';
 import axios from 'axios';
 

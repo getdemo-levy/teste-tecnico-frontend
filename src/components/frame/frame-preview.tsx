@@ -1,6 +1,6 @@
 import React from 'react';
 import FrameRenderer from '@/components/frame/frame-renderer';
-import { FrameEditorProps } from '@/interfaces/frame-editor-props.interface';
+import { FrameEditorProps } from '@/interfaces/frame/frame-editor-props.interface';
 
 const FramePreview: React.FC<FrameEditorProps> = ({ selectedFrame }) => {
   if (!selectedFrame) return null;
