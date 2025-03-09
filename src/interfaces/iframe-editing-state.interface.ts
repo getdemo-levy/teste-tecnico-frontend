@@ -3,4 +3,5 @@ export interface IframeEditingState {
   originalHtml: string;
   isEditing: boolean;
   isFullscreen: boolean;
+  currentFrameId: string | null;
 }

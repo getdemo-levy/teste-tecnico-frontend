@@ -8,9 +8,9 @@ import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
 import FullscreenModal from '@/components/fullscreen-modal';
 import { AppDispatch, RootState } from '@/store';
-import { fetchDemoData, setSelectedFrame, saveHtmlAction } from '@/store/demo.slice';
+import { fetchDemoData, setSelectedFrame } from '@/store/demo.slice';
 import { updateFrame } from '@/store/demo.slice';
-import { setFullscreen } from '@/store/iframe-editing.slice';
+import { resetFrame, setFullscreen } from '@/store/iframe-editing.slice';
 
 const DemoPage: React.FC = () => {
   const router = useRouter();
@@ -33,12 +33,24 @@ const DemoPage: React.FC = () => {
     }
   }, [id, dispatch]);
 
-  const handleSaveHtml = (newHtml: string) => {
-    dispatch(saveHtmlAction(newHtml));
+  const handleSaveHtml = async (newHtml: string) => {
+    if (!demoDetails || !selectedFrame) return;
+    
+    try {
+      await dispatch(updateFrame({
+        id_demo: demoDetails.id,
+        id_frame: selectedFrame.id,
+        html: newHtml
+      })).unwrap();
+      
+      dispatch(resetFrame());
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+    }
   };
 
-  const handleCancelEdit = (options = {}) => {
-    console.log("Edit canceled with options:", options);
+  const handleCancelEdit = () => {
+    dispatch(resetFrame());
   };
 
   const saveAllChanges = () => {

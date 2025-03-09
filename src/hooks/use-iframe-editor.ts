@@ -4,9 +4,9 @@ import { useDispatch } from "react-redux";
 
 export const useIframeEditor = (
   iframeRef: React.RefObject<HTMLIFrameElement | null>,
-  dispatch: ReturnType<typeof useDispatch>,
-  isFullscreen: boolean //
+  isFullscreen: boolean
 ) => {
+  const dispatch = useDispatch();
   const editableElements = useMemo(() => ['P', 'DIV', 'SPAN', 'H1', 'H2', 'H3', 'LI'], []);
 
   const handleDoubleClick = useCallback((event: MouseEvent) => {
@@ -20,6 +20,7 @@ export const useIframeEditor = (
     if (editableElements.includes(target.tagName)) {
       target.contentEditable = 'true';
       target.focus();
+
       Object.assign(target.style, {
         outline: '2px solid #3B82F6',
         borderRadius: '4px',
@@ -32,6 +33,16 @@ export const useIframeEditor = (
 
       dispatch(setEditing(true));
 
+      const observer = new MutationObserver(() => {
+        dispatch(updateHtml(iframeDoc.documentElement.outerHTML));
+      });
+
+      observer.observe(target, {
+        characterData: true,
+        childList: true,
+        subtree: true
+      });
+
       const blurHandler = () => {
         Object.assign(target.style, {
           outline: '',
@@ -43,13 +54,14 @@ export const useIframeEditor = (
           margin: ''
         });
 
-        dispatch(updateHtml(iframeDoc.documentElement.outerHTML));
+        target.contentEditable = 'false';
+        observer.disconnect();
         target.removeEventListener('blur', blurHandler);
       };
 
       target.addEventListener('blur', blurHandler);
     }
-  }, [dispatch, editableElements, isFullscreen]);
+  }, [dispatch, editableElements, isFullscreen, iframeRef]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -62,6 +74,7 @@ export const useIframeEditor = (
     iframe.addEventListener('load', loadHandler);
     return () => {
       iframe.removeEventListener('load', loadHandler);
+      iframe.contentDocument?.removeEventListener('dblclick', handleDoubleClick);
     };
   }, [handleDoubleClick, iframeRef]);
 

@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info, TriangleAlert } from 'lucide-react';
+import { X, Info } from 'lucide-react';
 import { RootState } from '@/store';
-import { setFullscreen } from '@/store/iframe-editing.slice';
+import { setFullscreen, initializeFrame, resetFrame } from '@/store/iframe-editing.slice';
 import SuccessNotification from './success-notification';
 import { useNotification } from '@/hooks/use-notification';
 import { FullscreenProps } from '@/interfaces/fullscreen-props.interface';
 
 const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onCancel }) => {
   const dispatch = useDispatch();
-  const isFullscreen = useSelector((state: RootState) => state.iframeEditing.isFullscreen);
-  const editedHtml = useSelector((state: RootState) => state.iframeEditing.editedHtml);
-
+  const {
+    isFullscreen,
+    editedHtml,
+    currentFrameId
+  } = useSelector((state: RootState) => state.iframeEditing);
+  
   const [showNotification, setShowNotification] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -26,20 +29,42 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   }, [isFullscreen]);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    if (selectedFrame && selectedFrame.id !== currentFrameId) {
+      dispatch(initializeFrame({
+        html: selectedFrame.html,
+        frameId: selectedFrame.id
+      }));
+    }
+  }, [selectedFrame, currentFrameId, dispatch]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
         setShowTooltip(false);
       }
-    }
+    };
 
     if (showTooltip) {
       document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
     }
-
+    
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTooltip]);
+
+  const handleSave = async () => {
+    try {
+      await onSave(editedHtml);
+      dispatch(setFullscreen(false));
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    dispatch(resetFrame());
+    onCancel();
+    dispatch(setFullscreen(false));
+  };
 
   if (!selectedFrame) return null;
 
@@ -63,13 +88,13 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
 
             <div className="flex gap-3">
               <button
-                onClick={() => onSave(editedHtml)}
+                onClick={handleSave}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all"
               >
                 Salvar
               </button>
               <button
-                onClick={() => onCancel()}
+                onClick={handleCancel}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-all"
               >
                 Cancelar
@@ -87,31 +112,23 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
             {showTooltip && (
               <motion.div
                 ref={tooltipRef}
-                className="absolute top-12 left-4 bg-white text-gray-800 p-4 rounded-lg shadow-lg max-w-sm text-1x1 z-50"
+                className="absolute top-12 left-4 bg-white text-gray-800 p-4 rounded-lg shadow-lg max-w-sm text-sm z-50"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
                 <p className="mb-2">
-                  <strong>Dica:</strong> Dê um <strong>duplo clique</strong> em um texto para editá-lo.  
-                  Use o botão <strong className="text-green-400">&ldquo;Salvar&ldquo;</strong> para confirmar as alterações no frame atual, 
-                  ou o <strong className="text-red-400">&ldquo;Cancelar&ldquo;</strong> para desfazer as alterações.  
+                  <strong>Dica:</strong> Dê um <strong>duplo clique</strong> em um texto para editá-lo.
+                  Use o botão <strong className="text-green-400">Salvar</strong> para confirmar as alterações,
+                  ou <strong className="text-red-400">Cancelar</strong> para desfazer.
                 </p>
-                <p className="mb-2">
-                  Você pode alternar entre os frames usando as <strong>setas da barra superior</strong>.
-                </p>
-                
-                <div className='flex justify-end gap-2'>
-                  <TriangleAlert style={{ color: 'red' }} />
-                  <TriangleAlert style={{ color: 'red' }} />
-                  <button
-                    onClick={() => setShowTooltip(false)}
-                    className="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1 rounded-lg text-xs"
-                  >
-                    Entendi
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowTooltip(false)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs mt-2"
+                >
+                  Entendi
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -125,7 +142,7 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <iframe
-                srcDoc={selectedFrame.html || ''}
+                srcDoc={editedHtml}
                 className="w-full h-full border-none"
                 sandbox="allow-same-origin allow-scripts allow-forms"
               />

@@ -6,6 +6,7 @@ const initialState: IframeEditingState = {
   originalHtml: '',
   isEditing: false,
   isFullscreen: false,
+  currentFrameId: null,
 };
 
 const iframeEditingSlice = createSlice({
@@ -15,28 +16,29 @@ const iframeEditingSlice = createSlice({
     setFullscreen(state, action: PayloadAction<boolean>) {
       state.isFullscreen = action.payload;
     },
-    setInitialHtml(state, action: PayloadAction<string>) {
-      state.originalHtml = action.payload;
-      state.editedHtml = action.payload;
+    initializeFrame(state, action: PayloadAction<{ html: string; frameId: string }>) {
+      state.originalHtml = action.payload.html;
+      state.editedHtml = action.payload.html;
+      state.currentFrameId = action.payload.frameId;
     },
     updateHtml(state, action: PayloadAction<string>) {
       state.editedHtml = action.payload;
     },
+    resetFrame(state) {
+      state.editedHtml = state.originalHtml;
+      state.isEditing = false;
+    },
     setEditing(state, action: PayloadAction<boolean>) {
       state.isEditing = action.payload;
-      state.originalHtml = state.editedHtml;
-    },
-    saveEditing(state) {
-      state.isEditing = false;
-      state.originalHtml = state.editedHtml;
-    },
-    cancelEditing(state) {
-      state.isEditing = false;
-      state.editedHtml = state.originalHtml;
-    },
+    }
   },
 });
 
-export const { setFullscreen, setInitialHtml, updateHtml, setEditing, saveEditing, cancelEditing } =
-  iframeEditingSlice.actions;
+export const {
+  setFullscreen,
+  initializeFrame,
+  updateHtml,
+  resetFrame,
+  setEditing
+} = iframeEditingSlice.actions;
 export default iframeEditingSlice.reducer;

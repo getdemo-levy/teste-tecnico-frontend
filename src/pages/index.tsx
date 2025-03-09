@@ -8,13 +8,9 @@ import { fetchDemos } from '@/store/home.slice';
 const HomePage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { demos, loading, error } = useSelector((state: RootState) => state.home);
-  console.log('demos: ', demos);
   useEffect(() => {
-  console.log('Iniciando fetchDemos...');
   dispatch(fetchDemos())
     .unwrap()
-    .then(data => console.log('Dados recebidos:', data))
-    .catch(error => console.error('Erro no fetchDemos:', error));
 }, [dispatch]);
 
   if (loading) return <p>Carregando...</p>;
