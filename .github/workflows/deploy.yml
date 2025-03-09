@@ -3,7 +3,12 @@ name: Deploy to AWS Amplify
 on:
   push:
     branches:
-      - main 
+      - main
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: us-east-1
 
 jobs:
   deploy:
@@ -27,6 +32,9 @@ jobs:
 
       - name: Install Amplify CLI
         run: npm install -g @aws-amplify/cli
+
+      - name: Pull Amplify Project
+        run: amplify pull --appId d288zmy9qlsxi0 --envName production
 
       - name: Deploy to AWS Amplify
         run: |
