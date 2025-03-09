@@ -22,7 +22,9 @@ const iframeEditingSlice = createSlice({
       state.currentFrameId = action.payload.frameId;
     },
     updateHtml(state, action: PayloadAction<string>) {
-      state.editedHtml = action.payload;
+      if (action.payload !== state.editedHtml) {
+        state.editedHtml = action.payload;
+      }
     },
     resetFrame(state) {
       state.editedHtml = state.originalHtml;

@@ -53,7 +53,10 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
 
   const handleSave = async () => {
     try {
-      await onSave(editedHtml);
+      const iframe = document.querySelector('iframe');
+      const finalHtml = iframe?.contentDocument?.documentElement.outerHTML || editedHtml;
+      
+      await onSave(finalHtml);
       dispatch(setFullscreen(false));
     } catch (error) {
       console.error('Erro ao salvar:', error);
@@ -63,7 +66,6 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   const handleCancel = () => {
     dispatch(resetFrame());
     onCancel();
-    dispatch(setFullscreen(false));
   };
 
   if (!selectedFrame) return null;

@@ -52,17 +52,19 @@ export const updateFrame = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log('html: ', html)
       await axios.put(
         `${apiUrl}/demos/${id_demo}/frames/${id_frame}`,
         { html }
       );
+
       return { id_frame, html };
     } catch (error: any) {
+      console.error(error);
       return rejectWithValue(error.response?.data?.message || 'Erro ao salvar alterações');
     }
   }
 );
+
 
 const demoSlice = createSlice({
   name: 'demo',
@@ -113,9 +115,29 @@ const demoSlice = createSlice({
         state.saving += 1;
         state.error = null;
       })
+      .addCase(updateFrame.fulfilled, (state, action) => {
+        const { id_frame, html } = action.payload;
+        state.saving -= 1;
+
+        state.frames = state.frames.map(frame =>
+          frame.id === id_frame ? {
+            ...frame,
+            html: html,
+            isModified: false
+          } : frame
+        );
+
+        if (state.selectedFrame?.id === id_frame) {
+          state.selectedFrame = { ...state.selectedFrame, html };
+        }
+
+        state.hasUnsavedChanges = state.frames.some(f => f.isModified);
+      })
       .addCase(updateFrame.rejected, (state, action) => {
         state.saving -= 1;
         state.error = action.payload as string;
+
+        state.hasUnsavedChanges = true;
       });
   },
 });

@@ -1,6 +1,7 @@
 import { setEditing, updateHtml } from "@/store/iframe-editing.slice";
+import { RootState } from '@/store';
 import { useMemo, useCallback, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 export const useIframeEditor = (
   iframeRef: React.RefObject<HTMLIFrameElement | null>,
@@ -8,6 +9,7 @@ export const useIframeEditor = (
 ) => {
   const dispatch = useDispatch();
   const editableElements = useMemo(() => ['P', 'DIV', 'SPAN', 'H1', 'H2', 'H3', 'LI'], []);
+  const { editedHtml } = useSelector((state: RootState) => state.iframeEditing);
 
   const handleDoubleClick = useCallback((event: MouseEvent) => {
     if (!isFullscreen) return;
@@ -33,14 +35,20 @@ export const useIframeEditor = (
 
       dispatch(setEditing(true));
 
-      const observer = new MutationObserver(() => {
-        dispatch(updateHtml(iframeDoc.documentElement.outerHTML));
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach(() => {
+          const newHtml = iframeDoc.documentElement.outerHTML;
+          if (newHtml !== editedHtml) {
+            dispatch(updateHtml(newHtml));
+          }
+        });
       });
 
-      observer.observe(target, {
-        characterData: true,
+      observer.observe(iframeDoc.documentElement, {
+        subtree: true,
         childList: true,
-        subtree: true
+        attributes: true,
+        characterData: true
       });
 
       const blurHandler = () => {
