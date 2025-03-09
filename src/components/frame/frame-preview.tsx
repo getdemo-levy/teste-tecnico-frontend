@@ -2,7 +2,7 @@ import React from 'react';
 import FrameRenderer from '@/components/frame/frame-renderer';
 import { FrameEditorProps } from '@/interfaces/frame-editor-props.interface';
 
-const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame }) => {
+const FramePreview: React.FC<FrameEditorProps> = ({ selectedFrame }) => {
   if (!selectedFrame) return null;
   return (
     <div className="p-2">
@@ -29,4 +29,4 @@ const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame }) => {
   );
 };
 
-export default FrameEditor;
+export default FramePreview;

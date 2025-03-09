@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useSelector, useDispatch } from 'react-redux';
 import Layout from '@/components/Layout';
 import ErrorAlert from '@/components/error-alert';
-import FrameEditor from '@/components/frame/frame-editor';
+import FramePreview from '@/components/frame/frame-preview';
 import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
 import FullscreenModal from '@/components/fullscreen-modal';
@@ -146,7 +146,7 @@ const DemoPage: React.FC = () => {
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-md overflow-hidden flex-col w-[70%]">
-            <FrameEditor 
+            <FramePreview 
               selectedFrame={selectedFrame} 
               onSave={handleSaveHtml}
               onCancel={handleCancelEdit}
