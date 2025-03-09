@@ -7,6 +7,7 @@ import { setFullscreen, initializeFrame, resetFrame } from '@/store/iframe-editi
 import SuccessNotification from './success-notification';
 import { useNotification } from '@/hooks/use-notification';
 import { FullscreenProps } from '@/interfaces/fullscreen-props.interface';
+import { clearUnsavedChanges } from '@/store/demo.slice';
 
 const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onCancel }) => {
   const dispatch = useDispatch();
@@ -57,7 +58,11 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
       const finalHtml = iframe?.contentDocument?.documentElement.outerHTML || editedHtml;
       
       await onSave(finalHtml);
-      dispatch(setFullscreen(false));
+      // Atualiza o HTML exibido no modal com o conteúdo salvo
+      dispatch(initializeFrame({
+        html: finalHtml,
+        frameId: selectedFrame!.id
+      }));
     } catch (error) {
       console.error('Erro ao salvar:', error);
     }
@@ -65,6 +70,7 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
 
   const handleCancel = () => {
     dispatch(resetFrame());
+    dispatch(clearUnsavedChanges());
     onCancel();
   };
 
@@ -144,6 +150,7 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <iframe
+                key={editedHtml} // Força recarregamento quando o HTML muda
                 srcDoc={editedHtml}
                 className="w-full h-full border-none"
                 sandbox="allow-same-origin allow-scripts allow-forms"

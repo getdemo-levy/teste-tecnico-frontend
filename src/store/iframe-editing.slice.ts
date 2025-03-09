@@ -29,6 +29,13 @@ const iframeEditingSlice = createSlice({
     resetFrame(state) {
       state.editedHtml = state.originalHtml;
       state.isEditing = false;
+
+      const iframe = document.querySelector('iframe');
+      if (iframe && iframe.contentDocument) {
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(state.originalHtml);
+        iframe.contentDocument.close();
+      }
     },
     setEditing(state, action: PayloadAction<boolean>) {
       state.isEditing = action.payload;

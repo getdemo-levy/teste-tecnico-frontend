@@ -33,7 +33,7 @@ export const fetchDemoData = createAsyncThunk(
 
       const frames = framesResponse.data.data
         .map(f => ({ ...f, isModified: false }))
-        .toSorted((a, b) => a.order - b.order);
+        .sort((a, b) => a.order - b.order);
 
       return {
         demoDetails: detailsResponse.data.data,
@@ -65,7 +65,6 @@ export const updateFrame = createAsyncThunk(
   }
 );
 
-
 const demoSlice = createSlice({
   name: 'demo',
   initialState,
@@ -91,6 +90,11 @@ const demoSlice = createSlice({
         ...frame,
         isModified: false
       }));
+
+      if (state.selectedFrame) {
+        state.selectedFrame.isModified = false;
+      }
+
       state.hasUnsavedChanges = false;
     },
   },
@@ -136,7 +140,6 @@ const demoSlice = createSlice({
       .addCase(updateFrame.rejected, (state, action) => {
         state.saving -= 1;
         state.error = action.payload as string;
-
         state.hasUnsavedChanges = true;
       });
   },
