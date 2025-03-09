@@ -14,10 +14,9 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html }) => {
         srcDoc={sanitizedHtml}
         className={`w-full h-[40vh] border-0`}
         title="Frame Renderer"
-        sandbox="allow-same-origin allow-forms"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
         loading="lazy"
       />
-      
       
     </div>
   );

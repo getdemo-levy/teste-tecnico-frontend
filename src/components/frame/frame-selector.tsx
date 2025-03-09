@@ -9,7 +9,7 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
     const scaledHtml = `
       <html>
         <head>
-          <meta name="viewport" content="width=device-width, initial-scale=0.3, minimum-scale=0.3, maximum-scale=0.3"/>
+          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;">
           <style>
             body { 
               transform: scale(0.4);
