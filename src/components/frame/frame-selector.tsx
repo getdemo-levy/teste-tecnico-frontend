@@ -6,43 +6,27 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
   const [hasOverflow, setHasOverflow] = useState(false);
   
   const createThumbnailPreview = (html: string) => {
-    const scaledHtml = `
-      <html>
-        <head>
-          <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src 'self' data:; img-src 'self' data:; style-src 'unsafe-inline'; media-src 'self' data:; script-src 'unsafe-inline' data:; object-src 'self' data:; frame-src 'self' data:;">
-          <style>
-            body { 
-              transform: scale(0.4);
-              transform-origin: 0 0;
-              width: 250%;
-              height: 250%;
-              overflow: hidden;
-            }
-          </style>
-        </head>
-        <body>
-          ${html}
-        </body>
-      </html>
-    `;
 
     return (
-      <div className=" h-fit w-fit bg-white flex flex-col items-center justify-center">
+      <div className="h-full w-full bg-white overflow-hidden">
         <iframe
-          srcDoc={scaledHtml}
-          className="w-full h-full border-0"
+          srcDoc={html}
+          className="w-full h-full border-0 overflow-hidden"
           title="Frame Renderer"
           sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
           loading="lazy"
           style={{
             pointerEvents: 'none',
-            width: '100%',
-            height: '100%',
-            zoom: 0.5, 
+            width: '500%',
+            height: '500%',
+            transform: 'scale(0.2)',
+            transformOrigin: '0 0',
+            overflow: 'hidden',
           }}
         />
       </div>
     );
+
   };
 
   useEffect(() => {
@@ -160,7 +144,7 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, on
                   )}
                 </div>
                 <div className="flex-1 overflow-hidden p-1">
-                  <div className="h-[80px] w-full scale-50 origin-top-left">
+                  <div className="h-full w-full">
                     {createThumbnailPreview(frame.html)}
                   </div>
                 </div>
