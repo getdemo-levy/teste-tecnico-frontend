@@ -25,16 +25,16 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build the app
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-
       - name: Install Amplify CLI
         run: npm install -g @aws-amplify/cli
 
       - name: Pull Amplify Project
-        run: amplify pull --appId d288zmy9qlsxi0 --envName production
+        run: amplify pull --appId d288zmy9qlsxi0 --envName production --yes
+
+      - name: Build the app
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Deploy to AWS Amplify
         run: |
