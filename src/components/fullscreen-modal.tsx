@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info } from 'lucide-react';
+import { X, Info, TriangleAlert } from 'lucide-react';
 import { RootState } from '@/store';
 import { setFullscreen } from '@/store/iframe-editing.slice';
 import SuccessNotification from './success-notification';
@@ -95,15 +95,23 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
               >
                 <p className="mb-2">
                   <strong>Dica:</strong> Dê um <strong>duplo clique</strong> em um texto para editá-lo.  
-                  Use o botão <strong className="text-green-400">&ldquo;Salvar&ldquo;</strong> para confirmar as alterações no frame atual.  
+                  Use o botão <strong className="text-green-400">&ldquo;Salvar&ldquo;</strong> para confirmar as alterações no frame atual, 
+                  ou o <strong className="text-red-400">&ldquo;Cancelar&ldquo;</strong> para desfazer as alterações.  
+                </p>
+                <p className="mb-2">
                   Você pode alternar entre os frames usando as <strong>setas da barra superior</strong>.
                 </p>
-                <button
-                  onClick={() => setShowTooltip(false)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs"
-                >
-                  Entendi
-                </button>
+                
+                <div className='flex justify-end gap-2'>
+                  <TriangleAlert style={{ color: 'red' }} />
+                  <TriangleAlert style={{ color: 'red' }} />
+                  <button
+                    onClick={() => setShowTooltip(false)}
+                    className="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1 rounded-lg text-xs"
+                  >
+                    Entendi
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
