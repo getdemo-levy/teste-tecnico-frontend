@@ -1,15 +1,17 @@
-import { useEffect, useCallback, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
-import { updateHtml, setEditing } from '@/store/iframe-editing.slice';
+import { setEditing, updateHtml } from "@/store/iframe-editing.slice";
+import { useMemo, useCallback, useEffect } from "react";
+import { useDispatch } from "react-redux";
 
-// Modificando o tipo do parâmetro para aceitar RefObject com valor null
 export const useIframeEditor = (
   iframeRef: React.RefObject<HTMLIFrameElement | null>,
-  dispatch: ReturnType<typeof useDispatch>
+  dispatch: ReturnType<typeof useDispatch>,
+  isFullscreen: boolean //
 ) => {
   const editableElements = useMemo(() => ['P', 'DIV', 'SPAN', 'H1', 'H2', 'H3', 'LI'], []);
 
   const handleDoubleClick = useCallback((event: MouseEvent) => {
+    if (!isFullscreen) return;
+
     const iframeDoc = iframeRef.current?.contentDocument;
     if (!iframeDoc) return;
 
@@ -47,7 +49,7 @@ export const useIframeEditor = (
 
       target.addEventListener('blur', blurHandler);
     }
-  }, [dispatch, editableElements]);
+  }, [dispatch, editableElements, isFullscreen]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -63,15 +65,5 @@ export const useIframeEditor = (
     };
   }, [handleDoubleClick, iframeRef]);
 
-  const removeOutline = useCallback(() => {
-    const iframeDoc = iframeRef.current?.contentDocument;
-    if (iframeDoc) {
-      const editableElements = iframeDoc.querySelectorAll('[contenteditable="true"]');
-      editableElements.forEach((element) => {
-        (element as HTMLElement).style.outline = '';
-      });
-    }
-  }, [iframeRef]);
-
-  return { handleDoubleClick, removeOutline };
+  return { handleDoubleClick };
 };

@@ -2,16 +2,8 @@ import React from 'react';
 import FrameRenderer from '@/components/frame/frame-renderer';
 import { FrameEditorProps } from '@/interfaces/frame-editor-props.interface';
 
-const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave, onCancel }) => {
+const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame }) => {
   if (!selectedFrame) return null;
-  
-  const handleCancel = (options = {}) => {
-    console.log("Edição cancelada", options);
-    if (typeof onCancel === 'function') {
-      onCancel(options);
-    }
-  };
-
   return (
     <div className="p-2">
       <div className="border border-gray-200 rounded-md w-full">
@@ -30,14 +22,8 @@ const FrameEditor: React.FC<FrameEditorProps> = ({ selectedFrame, onSave, onCanc
         <div className="w-full">
           <FrameRenderer 
             html={selectedFrame.html} 
-            onSave={onSave} 
-            onCancel={handleCancel} 
           />
         </div>
-        <div className="mt-3 p-2 bg-blue-50 text-sm text-black-700 rounded border border-blue-200">
-        <strong>Dica:</strong> Clique duas vezes em um texto para editá-lo. Use o botão verde <strong className="text-green-700">&rdquo;Salvar&rdquo;</strong> para confirmar as alterações no frame atual. 
-        Após editar todos os frames, clique no botão azul <strong className="text-blue-700">&rdquo;Salvar todas alterações&rdquo;</strong> no topo da página.
-      </div>
       </div>
     </div>
   );

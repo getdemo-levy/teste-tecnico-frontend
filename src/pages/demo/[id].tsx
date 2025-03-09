@@ -94,7 +94,7 @@ const DemoPage: React.FC = () => {
 
   return (
     <Layout title={demoName}>
-      <FullscreenModal onSave={handleSaveHtml} onCancel={handleCancelEdit} />
+      <FullscreenModal selectedFrame={selectedFrame} onSave={handleSaveHtml} onCancel={handleCancelEdit} />
 
       <div className="max-w-8xl mx-auto">
         <div className="flex items-center justify-between mb-6">
@@ -139,6 +139,10 @@ const DemoPage: React.FC = () => {
               >
                 Visualizar Fullscreen
               </button>
+            </div>
+            <div className="mt-3 p-2 bg-blue-50 text-sm text-black-700 rounded border border-blue-200">
+              <strong>Dica:</strong> Clique duas vezes em um texto para editá-lo. Use o botão verde <strong className="text-green-700">&rdquo;Salvar&rdquo;</strong> para confirmar as alterações no frame atual. 
+              Após editar todos os frames, clique no botão azul <strong className="text-blue-700">&rdquo;Salvar todas alterações&rdquo;</strong> no topo da página.
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-md overflow-hidden flex-col w-[70%]">
