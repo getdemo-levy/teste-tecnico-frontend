@@ -24,9 +24,7 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const { resetEditableState } = useIframeEditor(iframeRef, isFullscreen);
-
-  useIframeEditor(iframeRef, isFullscreen);
+  const { resetEditableState, setupEventListeners } = useIframeEditor(iframeRef, isFullscreen);
 
   const hasChanges = editedHtml !== originalHtml;
 
@@ -61,10 +59,20 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTooltip]);
 
+  useEffect(() => {
+    if (iframeRef.current && iframeRef.current.contentDocument) {
+      const timeoutId = setTimeout(() => {
+        setupEventListeners();
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [editedHtml, setupEventListeners]);
+
   const handleSaveConfirmed = async () => {
     try {
       resetEditableState();
-      const finalHtml = iframeRef.current?.contentDocument?.documentElement.outerHTML || editedHtml;
+      const finalHtml = iframeRef.current?.contentDocument?.documentElement.outerHTML || originalHtml;
       
       await onSave(finalHtml);
       dispatch(initializeFrame({
@@ -72,6 +80,10 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
         frameId: selectedFrame!.id
       }));
       setShowNotification(true);
+      
+      setTimeout(() => {
+        setupEventListeners();
+      }, 100);
     } catch (error) {
       console.error('Erro ao salvar:', error);
     }
@@ -84,6 +96,10 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
     dispatch(clearUnsavedChanges());
     onCancel();
     setShowCancelConfirmation(false);
+    
+    setTimeout(() => {
+      setupEventListeners();
+    }, 100);
   };
 
   if (!selectedFrame) return null;
@@ -234,8 +250,8 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
               <iframe
                 ref={iframeRef}
                 title={'Frame Html'}
-                key={editedHtml}
-                srcDoc={editedHtml}
+                key={selectedFrame?.id}
+                srcDoc={originalHtml}
                 className="w-full h-full border-none"
                 sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
               />
