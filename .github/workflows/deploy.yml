@@ -25,6 +25,9 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
+      - name: Install Amplify CLI
+        run: npm install -g @aws-amplify/cli
+
       - name: Deploy to AWS Amplify
         run: |
           amplify status
