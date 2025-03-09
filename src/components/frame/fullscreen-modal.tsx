@@ -3,11 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info, AlertTriangle } from 'lucide-react';
 import { RootState } from '@/store';
-import { setFullscreen, initializeFrame, resetFrame, updateHtml } from '@/store/iframe-editing.slice';
+import { setFullscreen, initializeFrame, resetFrame } from '@/store/iframe-editing.slice';
 import SuccessNotification from '../success-notification';
 import { useNotification } from '@/hooks/use-notification';
 import { FullscreenProps } from '@/interfaces/fullscreen-props.interface';
 import { clearUnsavedChanges } from '@/store/demo.slice';
+import { useIframeEditor } from '@/hooks/use-iframe-editor';
 
 const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onCancel }) => {
   const dispatch = useDispatch();
@@ -17,12 +18,15 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
     originalHtml,
     currentFrameId
   } = useSelector((state: RootState) => state.iframeEditing);
-  
   const [showNotification, setShowNotification] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
   const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { resetEditableState } = useIframeEditor(iframeRef, isFullscreen);
+
+  useIframeEditor(iframeRef, isFullscreen);
 
   const hasChanges = editedHtml !== originalHtml;
 
@@ -44,33 +48,6 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   }, [selectedFrame, currentFrameId, dispatch]);
 
   useEffect(() => {
-    const iframe = document.querySelector('iframe');
-    const contentDocument = iframe?.contentDocument;
-
-    const handleInput = () => {
-      const updatedHtml = contentDocument?.documentElement.outerHTML;
-      if (updatedHtml && updatedHtml !== editedHtml) {
-        dispatch(updateHtml({
-          html: updatedHtml,
-          frameId: selectedFrame!.id
-        }));
-      }
-    };
-
-    if (contentDocument) {
-      contentDocument.addEventListener('input', handleInput);
-      contentDocument.addEventListener('change', handleInput);
-    }
-
-    return () => {
-      if (contentDocument) {
-        contentDocument.removeEventListener('input', handleInput);
-        contentDocument.removeEventListener('change', handleInput);
-      }
-    };
-  }, [editedHtml, dispatch, selectedFrame]);
-
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
         setShowTooltip(false);
@@ -86,8 +63,8 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
 
   const handleSaveConfirmed = async () => {
     try {
-      const iframe = document.querySelector('iframe');
-      const finalHtml = iframe?.contentDocument?.documentElement.outerHTML || editedHtml;
+      resetEditableState();
+      const finalHtml = iframeRef.current?.contentDocument?.documentElement.outerHTML || editedHtml;
       
       await onSave(finalHtml);
       dispatch(initializeFrame({
@@ -102,6 +79,7 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   };
 
   const handleCancelConfirmed = () => {
+    resetEditableState();
     dispatch(resetFrame());
     dispatch(clearUnsavedChanges());
     onCancel();
@@ -120,7 +98,6 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
         >
-          {/* Confirmação de Salvamento */}
           <AnimatePresence>
             {showSaveConfirmation && (
               <motion.div
@@ -156,7 +133,6 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
             )}
           </AnimatePresence>
 
-          {/* Confirmação de Cancelamento */}
           <AnimatePresence>
             {showCancelConfirmation && (
               <motion.div
@@ -256,6 +232,8 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <iframe
+                ref={iframeRef}
+                title={'Frame Html'}
                 key={editedHtml}
                 srcDoc={editedHtml}
                 className="w-full h-full border-none"

@@ -8,19 +8,45 @@ export const useIframeEditor = (
   isFullscreen: boolean
 ) => {
   const dispatch = useDispatch();
-  const editableElements = useMemo(() => ['P', 'DIV', 'SPAN', 'H1', 'H2', 'H3', 'LI'], []);
-  const { editedHtml } = useSelector((state: RootState) => state.iframeEditing);
+  const editableElements = useMemo(() => ['P', 'DIV', 'SPAN', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'A', 'BUTTON', 'LABEL', 'STRONG', 'EM'], []);
+  const { currentFrameId } = useSelector((state: RootState) => state.iframeEditing);
 
-  
+  const cleanupEditableElements = useCallback(() => {
+    const iframeDoc = iframeRef.current?.contentDocument;
+    if (!iframeDoc) return;
+
+    const editableNodes = iframeDoc.querySelectorAll('[contenteditable="true"]');
+
+    editableNodes.forEach((node) => {
+      const element = node as HTMLElement;
+      Object.assign(element.style, {
+        outline: '',
+        borderRadius: '',
+        boxShadow: '',
+        minHeight: '',
+        transition: '',
+        padding: '',
+        margin: ''
+      });
+      element.contentEditable = 'false';
+    });
+
+    dispatch(setEditing(false));
+  }, [dispatch, iframeRef]);
+
   const handleDoubleClick = useCallback((event: MouseEvent) => {
     if (!isFullscreen) return;
 
     const iframeDoc = iframeRef.current?.contentDocument;
     if (!iframeDoc) return;
 
+    cleanupEditableElements();
+
     const target = event.target as HTMLElement;
 
     if (editableElements.includes(target.tagName)) {
+      event.preventDefault();
+
       target.contentEditable = 'true';
       target.focus();
 
@@ -36,23 +62,19 @@ export const useIframeEditor = (
 
       dispatch(setEditing(true));
 
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach(() => {
-          const newHtml = iframeDoc.documentElement.outerHTML;
-          if (newHtml !== editedHtml) {
-            dispatch(updateHtml({
-              html: newHtml,
-              frameId: iframeDoc.documentElement.id
-              }));
-          }
-        });
+      const observer = new MutationObserver(() => {
+        const newHtml = iframeDoc.documentElement.outerHTML;
+        dispatch(updateHtml({
+          html: newHtml,
+          frameId: currentFrameId || ''
+        }));
       });
 
-      observer.observe(iframeDoc.documentElement, {
-        subtree: true,
+      observer.observe(target, {
         childList: true,
-        attributes: true,
-        characterData: true
+        attributes: false,
+        characterData: true,
+        subtree: true
       });
 
       const blurHandler = () => {
@@ -68,27 +90,43 @@ export const useIframeEditor = (
 
         target.contentEditable = 'false';
         observer.disconnect();
+        dispatch(setEditing(false));
         target.removeEventListener('blur', blurHandler);
       };
 
       target.addEventListener('blur', blurHandler);
     }
-  }, [dispatch, editableElements, isFullscreen, iframeRef]);
+  }, [dispatch, editableElements, isFullscreen, iframeRef, currentFrameId, cleanupEditableElements]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const loadHandler = () => {
-      iframe.contentDocument?.addEventListener('dblclick', handleDoubleClick);
+    const setupEventListeners = () => {
+      const iframeDocument = iframe.contentDocument;
+      if (iframeDocument) {
+        iframeDocument.removeEventListener('dblclick', handleDoubleClick);
+        iframeDocument.addEventListener('dblclick', handleDoubleClick);
+      }
     };
 
-    iframe.addEventListener('load', loadHandler);
+    iframe.addEventListener('load', setupEventListeners);
+
+    if (iframe.contentDocument) {
+      setupEventListeners();
+    }
+
     return () => {
-      iframe.removeEventListener('load', loadHandler);
-      iframe.contentDocument?.removeEventListener('dblclick', handleDoubleClick);
+      iframe.removeEventListener('load', setupEventListeners);
+      if (iframe.contentDocument) {
+        iframe.contentDocument.removeEventListener('dblclick', handleDoubleClick);
+      }
     };
-  }, [handleDoubleClick, iframeRef]);
+  }, [handleDoubleClick, iframeRef, isFullscreen]);
 
-  return { handleDoubleClick };
+  const resetEditableState = useCallback(() => {
+    cleanupEditableElements();
+  }, [cleanupEditableElements]);
+
+  return { handleDoubleClick, resetEditableState };
 };
