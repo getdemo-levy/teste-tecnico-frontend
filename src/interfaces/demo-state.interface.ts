@@ -1,5 +1,5 @@
 import { Demo } from "./demo.interface";
-import { Frame } from "./frame.interface";
+import { Frame } from "./frame/frame.interface";
 
 export interface DemoState {
   demoDetails: Demo | null;

@@ -1,4 +1,4 @@
-import { FrameSelectorProps } from '@/interfaces/frame-selector-props.interface';
+import { FrameSelectorProps } from '@/interfaces/frame/frame-selector-props.interface';
 import React, { useRef, useState, useEffect } from 'react';
 
 const FrameSelector: React.FC<FrameSelectorProps> = ({ frames, selectedFrame, onSelect }) => {

@@ -1,4 +1,4 @@
-import { Frame } from "./frame.interface";
+import { Frame } from "./frame/frame.interface";
 
 export interface FullscreenProps {
   onSave: (html: string) => Promise<void>;

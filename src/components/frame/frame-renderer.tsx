@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FrameRendererProps } from '@/interfaces/frame-renderer-props';
+import { FrameRendererProps } from '@/interfaces/frame/frame-renderer-props';
 
 const FrameRenderer: React.FC<FrameRendererProps> = ({ html }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
