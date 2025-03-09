@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Info } from 'lucide-react';
+import { X, Info, AlertTriangle } from 'lucide-react';
 import { RootState } from '@/store';
-import { setFullscreen, initializeFrame, resetFrame } from '@/store/iframe-editing.slice';
-import SuccessNotification from './success-notification';
+import { setFullscreen, initializeFrame, resetFrame, updateHtml } from '@/store/iframe-editing.slice';
+import SuccessNotification from '../success-notification';
 import { useNotification } from '@/hooks/use-notification';
 import { FullscreenProps } from '@/interfaces/fullscreen-props.interface';
 import { clearUnsavedChanges } from '@/store/demo.slice';
@@ -14,12 +14,17 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   const {
     isFullscreen,
     editedHtml,
+    originalHtml,
     currentFrameId
   } = useSelector((state: RootState) => state.iframeEditing);
   
   const [showNotification, setShowNotification] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  const hasChanges = editedHtml !== originalHtml;
 
   useNotification(showNotification, setShowNotification);
 
@@ -39,6 +44,33 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
   }, [selectedFrame, currentFrameId, dispatch]);
 
   useEffect(() => {
+    const iframe = document.querySelector('iframe');
+    const contentDocument = iframe?.contentDocument;
+
+    const handleInput = () => {
+      const updatedHtml = contentDocument?.documentElement.outerHTML;
+      if (updatedHtml && updatedHtml !== editedHtml) {
+        dispatch(updateHtml({
+          html: updatedHtml,
+          frameId: selectedFrame!.id
+        }));
+      }
+    };
+
+    if (contentDocument) {
+      contentDocument.addEventListener('input', handleInput);
+      contentDocument.addEventListener('change', handleInput);
+    }
+
+    return () => {
+      if (contentDocument) {
+        contentDocument.removeEventListener('input', handleInput);
+        contentDocument.removeEventListener('change', handleInput);
+      }
+    };
+  }, [editedHtml, dispatch, selectedFrame]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
         setShowTooltip(false);
@@ -52,26 +84,28 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTooltip]);
 
-  const handleSave = async () => {
+  const handleSaveConfirmed = async () => {
     try {
       const iframe = document.querySelector('iframe');
       const finalHtml = iframe?.contentDocument?.documentElement.outerHTML || editedHtml;
       
       await onSave(finalHtml);
-      // Atualiza o HTML exibido no modal com o conteúdo salvo
       dispatch(initializeFrame({
         html: finalHtml,
         frameId: selectedFrame!.id
       }));
+      setShowNotification(true);
     } catch (error) {
       console.error('Erro ao salvar:', error);
     }
+    setShowSaveConfirmation(false);
   };
 
-  const handleCancel = () => {
+  const handleCancelConfirmed = () => {
     dispatch(resetFrame());
     dispatch(clearUnsavedChanges());
     onCancel();
+    setShowCancelConfirmation(false);
   };
 
   if (!selectedFrame) return null;
@@ -86,6 +120,78 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
         >
+          {/* Confirmação de Salvamento */}
+          <AnimatePresence>
+            {showSaveConfirmation && (
+              <motion.div
+                className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <AlertTriangle className="text-yellow-600" size={24} />
+                    <h3 className="text-xl font-semibold">Confirmar Salvamento</h3>
+                  </div>
+                  <p className="mb-6 text-gray-600">
+                    Deseja salvar as alterações feitas neste frame?
+                  </p>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowSaveConfirmation(false)}
+                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSaveConfirmed}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                      Salvar
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Confirmação de Cancelamento */}
+          <AnimatePresence>
+            {showCancelConfirmation && (
+              <motion.div
+                className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <AlertTriangle className="text-red-600" size={24} />
+                    <h3 className="text-xl font-semibold">Confirmar Cancelamento</h3>
+                  </div>
+                  <p className="mb-6 text-gray-600">
+                    Todas as alterações não salvas serão perdidas. Deseja continuar?
+                  </p>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setShowCancelConfirmation(false)}
+                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                    >
+                      Voltar
+                    </button>
+                    <button
+                      onClick={handleCancelConfirmed}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                      Confirmar
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="absolute top-0 left-0 w-full bg-gray-900 text-white px-5 py-2 flex justify-between items-center shadow-md z-10">
             <button
               onClick={() => setShowTooltip(true)}
@@ -96,13 +202,13 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
 
             <div className="flex gap-3">
               <button
-                onClick={handleSave}
+                onClick={() => hasChanges ? setShowSaveConfirmation(true) : handleSaveConfirmed()}
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all"
               >
                 Salvar
               </button>
               <button
-                onClick={handleCancel}
+                onClick={() => hasChanges ? setShowCancelConfirmation(true) : handleCancelConfirmed()}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-all"
               >
                 Cancelar
@@ -150,10 +256,10 @@ const FullscreenModal: React.FC<FullscreenProps> = ({ selectedFrame, onSave, onC
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
               <iframe
-                key={editedHtml} // Força recarregamento quando o HTML muda
+                key={editedHtml}
                 srcDoc={editedHtml}
                 className="w-full h-full border-none"
-                sandbox="allow-same-origin allow-scripts allow-forms"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-modals"
               />
             </motion.div>
           </div>

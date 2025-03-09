@@ -1,5 +1,6 @@
 import { IframeEditingState } from "@/interfaces/iframe-editing-state.interface";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from ".";
 
 const initialState: IframeEditingState = {
   editedHtml: '',
@@ -21,9 +22,10 @@ const iframeEditingSlice = createSlice({
       state.editedHtml = action.payload.html;
       state.currentFrameId = action.payload.frameId;
     },
-    updateHtml(state, action: PayloadAction<string>) {
-      if (action.payload !== state.editedHtml) {
-        state.editedHtml = action.payload;
+    updateHtml(state, action: PayloadAction<{ html: string; frameId: string }>) { // Corrigido o payload
+      if (action.payload.frameId === state.currentFrameId &&
+        action.payload.html !== state.editedHtml) {
+        state.editedHtml = action.payload.html;
       }
     },
     resetFrame(state) {
@@ -43,10 +45,14 @@ const iframeEditingSlice = createSlice({
   },
 });
 
+export const selectIframeEditing = (state: RootState) => state.iframeEditing;
+export const selectEditedHtml = (state: RootState) => state.iframeEditing.editedHtml;
+export const selectIsFullscreen = (state: RootState) => state.iframeEditing.isFullscreen;
+
 export const {
   setFullscreen,
   initializeFrame,
-  updateHtml,
+  updateHtml, // Export corrigido
   resetFrame,
   setEditing
 } = iframeEditingSlice.actions;

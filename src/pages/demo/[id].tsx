@@ -6,7 +6,7 @@ import ErrorAlert from '@/components/error-alert';
 import FramePreview from '@/components/frame/frame-preview';
 import FrameSelector from '@/components/frame/frame-selector';
 import LoadingSpinner from '@/components/loading-spinner';
-import FullscreenModal from '@/components/fullscreen-modal';
+import FullscreenModal from '@/components/frame/fullscreen-modal';
 import { AppDispatch, RootState } from '@/store';
 import { fetchDemoData, setSelectedFrame } from '@/store/demo.slice';
 import { updateFrame } from '@/store/demo.slice';
@@ -108,7 +108,7 @@ const DemoPage: React.FC = () => {
     <Layout title={demoName}>
       <FullscreenModal selectedFrame={selectedFrame} onSave={handleSaveHtml} onCancel={handleCancelEdit} />
 
-      <div className="max-w-8xl mx-auto">
+      <div className="max-w-8xl mx-auto py-2">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center text-sm text-gray-500">
             <button 

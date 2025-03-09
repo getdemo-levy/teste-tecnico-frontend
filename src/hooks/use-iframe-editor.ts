@@ -40,7 +40,10 @@ export const useIframeEditor = (
         mutations.forEach(() => {
           const newHtml = iframeDoc.documentElement.outerHTML;
           if (newHtml !== editedHtml) {
-            dispatch(updateHtml(newHtml));
+            dispatch(updateHtml({
+              html: newHtml,
+              frameId: iframeDoc.documentElement.id
+              }));
           }
         });
       });

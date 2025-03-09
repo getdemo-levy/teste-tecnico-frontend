@@ -11,7 +11,6 @@ const SuccessNotification: React.FC = () => {
         </div>
         <div>
           <p className="font-medium">Frame salvo com sucesso!</p>
-          <p>Lembre-se de clicar em &rdquo;Salvar todas alterações&rdquo; no topo da página quando terminar de editar todos os frames.</p>
         </div>
       </div>
     </div>
