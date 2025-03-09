@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://52.200.133.252:3005/:path*",
+        destination: "https://teste-tecnico-backend.onrender.com/api/:path*",
       },
     ];
   },
