@@ -94,8 +94,7 @@ const DemoPage: React.FC = () => {
 
   return (
     <Layout title={demoName}>
-      {/* Modal Fullscreen */}
-      <FullscreenModal />
+      <FullscreenModal onSave={handleSaveHtml} onCancel={handleCancelEdit} />
 
       <div className="max-w-8xl mx-auto">
         <div className="flex items-center justify-between mb-6">

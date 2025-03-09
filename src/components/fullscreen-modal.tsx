@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RootState } from '@/store';
 import { setFullscreen } from '@/store/iframe-editing.slice';
+import { FrameRendererProps } from '@/interfaces/frame-renderer-props';
 
-const FullscreenModal: React.FC = () => {
+const FullscreenModal: React.FC<FrameRendererProps> = ({onSave, onCancel}) => {
   const dispatch = useDispatch();
   const isFullscreen = useSelector((state: RootState) => state.iframeEditing.isFullscreen);
   const editedHtml = useSelector((state: RootState) => state.iframeEditing.editedHtml);
@@ -33,13 +34,26 @@ const FullscreenModal: React.FC = () => {
                 sandbox="allow-same-origin allow-scripts allow-forms"
               />
             </motion.div>
-            
-            <button
-              onClick={() => dispatch(setFullscreen(false))}
-              className="absolute top-5 right-5 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all"
-            >
-              Fechar
-            </button>
+            <div className='absolute top-5 right-5 flex gap-2'>
+              <button
+                onClick={() => onSave}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all"
+              >
+                Salvar
+              </button>
+              <button
+                onClick={() => onCancel}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => dispatch(setFullscreen(false))}
+                className=" bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </motion.div>
       )}

@@ -19,7 +19,9 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
   useNotification(showNotification, setShowNotification);
 
   useEffect(() => {
-    dispatch(updateHtml(html));
+    if(html) {
+      dispatch(updateHtml(html));
+    }
   }, [html, dispatch]);
 
   useEffect(() => {
@@ -40,7 +42,7 @@ const FrameRenderer: React.FC<FrameRendererProps> = ({ html, onSave, onCancel })
     dispatch(cancelEditing());
     removeOutline();
     
-    if (iframeRef.current) {
+    if (iframeRef.current && html) {
       iframeRef.current.srcdoc = html;
     }
     
